@@ -1,10 +1,13 @@
 module.exports = {
 	types: [
-		{ value: 'chore', name: 'chore:    Changes to auxiliary tools' },
+		{
+			value: 'chore',
+			name: 'chore:    Repository maintenance, automation, or support work'
+		},
 		{ value: 'docs', name: 'docs:     Documentation only changes' },
 		{
 			value: 'feat',
-			name: 'feat:     A new feature - to be used only for closing a ticket/issue'
+			name: 'feat:     A new feature or capability'
 		},
 		{ value: 'fix', name: 'fix:      A bug fix' },
 		{
@@ -16,60 +19,56 @@ module.exports = {
 			name: 'refactor: A code change that neither fixes a bug nor adds a feature'
 		},
 		{ value: 'revert', name: 'revert:   Revert to a commit' },
-		{ value: 'test', name: 'test:     CRUD-ding tests' },
+		{ value: 'test', name: 'test:     Add or update tests' },
 		{ value: 'wip', name: 'wip:      Work in progress' }
 	],
 
 	scopes: [
-		{ name: 'eva-server' },
-		{ name: 'package/api-registry' },
-		{ name: 'package/error-serializer' },
-		{ name: 'package/framework-classes' },
-		{ name: 'package/server-dependency-manager' },
-		{ name: 'server/rest-api-server' },
-		{ name: 'server/rest-api-server/baseclass' },
-		{ name: 'server/rest-api-server/knex-migrations' },
-		{ name: 'server/rest-api-server/context/masterdata' },
-		{ name: 'server/rest-api-server/domain/user' },
-		{
-			name: 'server/rest-api-server/domain/user/context/session_manager'
-		},
-		{
-			name: 'server/rest-api-server/domain/user/context/profile'
-		},
-		{ name: 'server/rest-api-server/domain/user/model' },
-		{ name: 'server/rest-api-server/domain/user/template' },
-		{ name: 'server/rest-api-server/surface/rest-api' },
-		{ name: 'server/rest-api-server/repository/config' },
-		{ name: 'server/rest-api-server/repository/audit' },
-		{ name: 'server/rest-api-server/repository/auth' },
-		{ name: 'server/rest-api-server/repository/cache' },
-		{ name: 'server/rest-api-server/repository/logger' },
-		{ name: 'server/rest-api-server/repository/message_i18n' },
-		{ name: 'server/rest-api-server/repository/mongodb' },
-		{ name: 'server/rest-api-server/repository/notification' },
-		{ name: 'server/rest-api-server/repository/renderer' },
-		{ name: 'server/rest-api-server/repository/sql_database' },
-		{ name: 'server/rest-api-server/repository/translate' }
+		{ name: 'mobile-shell' },
+		{ name: 'web-shell' },
+		{ name: 'core' },
+		{ name: 'design-system' },
+		{ name: 'platform' },
+		{ name: 'ui-composed' },
+		{ name: 'ui-kit' },
+		{ name: 'system-administrators-profile' },
+		{ name: 'system-administrators-profile/bff' },
+		{ name: 'system-administrators-profile/frontend' },
+		{ name: 'system-administrators-profile/shared' },
+		{ name: 'system-administrators-session-management' },
+		{ name: 'system-administrators-session-management/bff' },
+		{ name: 'system-administrators-session-management/frontend' },
+		{ name: 'system-administrators-session-management/shared' },
+		{ name: 'users-profile' },
+		{ name: 'users-profile/bff' },
+		{ name: 'users-profile/frontend' },
+		{ name: 'users-profile/shared' },
+		{ name: 'users-session-management' },
+		{ name: 'users-session-management/bff' },
+		{ name: 'users-session-management/frontend' },
+		{ name: 'users-session-management/shared' }
 	],
 
 	// it needs to match the value for field type. Eg.: 'fix'
 	scopeOverrides: {
 		chore: [
-			{ name: 'ai-tooling' },
+			{ name: 'repo' },
+			{ name: 'agents' },
+			{ name: 'ai-workflow' },
+			{ name: 'architecture' },
 			{ name: 'build' },
 			{ name: 'ci' },
 			{ name: 'config' },
 			{ name: 'deps' },
 			{ name: 'release' },
-			{ name: 'style/reformat' }
+			{ name: 'tooling' }
 		]
 	},
 
 	// override the messages, defaults are as follows
 	messages: {
 		type: "Select the type of change that you're committing:",
-		scope: '\nDenote the SCOPE of this change (optional):',
+		scope: '\nSelect the SCOPE of this change:',
 		// used if allowCustomScopes is true
 		customScope: 'Denote the SCOPE of this change:',
 		subject: 'Write a SHORT, IMPERATIVE tense description of the change:\n',
@@ -94,7 +93,7 @@ module.exports = {
 
 	allowTicketNumber: true,
 	isTicketNumberRequired: true,
-	ticketNumberTypes: ['feat', 'fix', 'refactor', 'perf', 'revert', 'test'],
+	ticketNumberTypes: ['feat', 'fix', 'refactor', 'perf', 'test'],
 	ticketNumberPrefix: '#',
 	ticketNumberRegExp: '\\d{1,7}',
 

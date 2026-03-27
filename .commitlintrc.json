@@ -16,6 +16,45 @@
 				"wip"
 			]
 		],
+		"scope-enum": [
+			2,
+			"always",
+			[
+				"repo",
+				"agents",
+				"architecture",
+				"ai-workflow",
+				"build",
+				"ci",
+				"tooling",
+				"config",
+				"deps",
+				"release",
+				"mobile-shell",
+				"web-shell",
+				"core",
+				"design-system",
+				"platform",
+				"ui-composed",
+				"ui-kit",
+				"system-administrators-profile",
+				"system-administrators-profile/bff",
+				"system-administrators-profile/frontend",
+				"system-administrators-profile/shared",
+				"system-administrators-session-management",
+				"system-administrators-session-management/bff",
+				"system-administrators-session-management/frontend",
+				"system-administrators-session-management/shared",
+				"users-profile",
+				"users-profile/bff",
+				"users-profile/frontend",
+				"users-profile/shared",
+				"users-session-management",
+				"users-session-management/bff",
+				"users-session-management/frontend",
+				"users-session-management/shared"
+			]
+		],
 
 		"body-max-length": [2, "always", 65536]
 	}
