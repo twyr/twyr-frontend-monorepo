@@ -57,6 +57,7 @@
 		"force-build": "turbo run build --force",
 		"force-build:clean": "npm run clean && npm run force-build",
 		"lint": "turbo run lint",
+		"prepare": "husky",
 		"start": "npm start --workspaces --if-present",
 		"tamagui:build": "tamagui generate",
 		"test": "npm run test --workspaces --if-present",
