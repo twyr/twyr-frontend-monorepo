@@ -1,0 +1,105 @@
+{
+	"name": "twyr-frontend-monorepo",
+	"type": "module",
+	"displayName": "twyr-frontend-monorepo",
+	"description": "twyr-frontend-monorepo in node.js",
+	"homepage": "https://github.com/twyr/twyr-frontend-monorepo",
+	"license": "MITNFA",
+	"version": "0.1.0",
+	"readme": "README.md",
+	"private": true,
+	"keywords": [
+		"frontend",
+		"monorepo",
+		"twyr",
+		"typescript",
+		"react",
+		"react-native",
+		"nextjs",
+		"expo",
+		"tamagui"
+	],
+	"author": {
+		"name": "Vish Desai",
+		"email": "vish.desai@twyr.in",
+		"url": "https://github.com/twyr/"
+	},
+	"contributors": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"maintainers": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "ssh://git@github.com:twyr/twyr-frontend-monorepo.git"
+	},
+	"bugs": {
+		"url": "https://github.com/twyr/twyr-frontend-monorepo/issues"
+	},
+	"packageManager": "npm@9.8.1",
+	"scripts": {
+		"dev": "turbo run dev",
+		"dev:web": "turbo run dev --filter=@twyr/web-shell",
+		"dev:mobile": "turbo run dev --filter=@twyr/mobile-shell",
+		"build": "turbo run build",
+		"build:web": "npm run tamagui:build && npm --workspace @twyr/web-shell run build",
+		"build:clean": "npm run clean && npm run build",
+		"clean": "npm run clean --workspaces --if-present",
+		"force-build": "turbo run build --force",
+		"force-build:clean": "npm run clean && npm run force-build",
+		"lint": "turbo run lint",
+		"start": "npm start --workspaces --if-present",
+		"tamagui:build": "tamagui generate",
+		"test": "npm run test --workspaces --if-present",
+		"typecheck": "turbo run typecheck"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"devDependencies": {
+		"@tamagui/cli": "^1.144.4",
+		"@commitlint/cli": "20.5.0",
+		"@commitlint/config-conventional": "20.5.0",
+		"@eslint/js": "10.0.1",
+		"@types/node": "^25.5.0",
+		"commitizen": "4.3.1",
+		"conventional-changelog-cli": "5.0.0",
+		"conventional-changelog-conventionalcommits": "9.3.0",
+		"cz-customizable": "7.5.1",
+		"eslint": "10.1.0",
+		"eslint-config-prettier": "10.1.8",
+		"eslint-formatter-junit": "9.0.1",
+		"eslint-plugin-jsonc": "3.1.2",
+		"eslint-plugin-mocha": "11.2.0",
+		"eslint-plugin-n": "17.24.0",
+		"eslint-plugin-prettier": "5.5.5",
+		"eslint-plugin-security": "4.0.0",
+		"eslint-plugin-unicorn": "63.0.0",
+		"globals": "16.4.0",
+		"husky": "9.1.7",
+		"is-ci": "4.1.0",
+		"jsonc-eslint-parser": "3.1.0",
+		"lint-staged": "16.4.0",
+		"npm-check-updates": "19.6.5",
+		"prettier": "3.8.1",
+		"turbo": "^2.8.20",
+		"typescript": "^5.5.4",
+		"typescript-eslint": "8.57.2"
+	},
+	"workspaces": [
+		"apps/*",
+		"domains/*/*/bff",
+		"domains/*/*/frontend",
+		"domains/*/*/shared",
+		"packages/*"
+	]
+}

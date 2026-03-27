@@ -1,0 +1,7 @@
+{
+	"*.{ts,tsx,js,jsx,mjs,cjs}": [
+		"npx prettier --cache --write",
+		"npx eslint --fix"
+	],
+	"*.{json,md,css}": ["npx prettier --cache --write"]
+}

@@ -1,0 +1,64 @@
+{
+	"name": "@twyr/users-profile-shared",
+	"type": "module",
+	"displayName": "Users Profile Shared",
+	"description": "Users Profile Shared package for twyr-frontend-monorepo in node.js",
+	"homepage": "https://github.com/twyr/twyr-frontend-monorepo/tree/main/domains/users/profile/shared",
+	"license": "MITNFA",
+	"version": "0.1.0",
+	"readme": "README.md",
+	"private": true,
+	"keywords": [
+		"frontend",
+		"monorepo",
+		"twyr",
+		"typescript",
+		"nodejs",
+		"shared",
+		"users",
+		"profile"
+	],
+	"author": {
+		"name": "Vish Desai",
+		"email": "vish.desai@twyr.in",
+		"url": "https://github.com/twyr/"
+	},
+	"contributors": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"maintainers": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "ssh://git@github.com:twyr/twyr-frontend-monorepo.git"
+	},
+	"bugs": {
+		"url": "https://github.com/twyr/twyr-frontend-monorepo/issues"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json --noEmit",
+		"build:clean": "npm run clean && npm run build",
+		"clean": "rm -rf dist tsconfig.tsbuildinfo",
+		"force-build": "npm run clean && npm run build",
+		"lint": "eslint . && npm run typecheck",
+		"test": "node --test",
+		"typecheck": "tsc -p tsconfig.json --noEmit"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"main": "src/index.ts",
+	"types": "src/index.ts",
+	"dependencies": {
+		"zod": "^4.3.6"
+	}
+}

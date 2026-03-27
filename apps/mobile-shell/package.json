@@ -1,0 +1,73 @@
+{
+	"name": "@twyr/mobile-shell",
+	"type": "module",
+	"displayName": "Mobile Shell",
+	"description": "Mobile Shell package for twyr-frontend-monorepo in node.js",
+	"homepage": "https://github.com/twyr/twyr-frontend-monorepo/tree/main/apps/mobile-shell",
+	"license": "MITNFA",
+	"version": "0.1.0",
+	"readme": "README.md",
+	"private": true,
+	"keywords": [
+		"frontend",
+		"monorepo",
+		"twyr",
+		"typescript",
+		"nodejs",
+		"application",
+		"mobile",
+		"shell",
+		"mobile-shell"
+	],
+	"author": {
+		"name": "Vish Desai",
+		"email": "vish.desai@twyr.in",
+		"url": "https://github.com/twyr/"
+	},
+	"contributors": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"maintainers": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "ssh://git@github.com:twyr/twyr-frontend-monorepo.git"
+	},
+	"bugs": {
+		"url": "https://github.com/twyr/twyr-frontend-monorepo/issues"
+	},
+	"scripts": {
+		"dev": "expo start",
+		"build": "expo export",
+		"build:clean": "npm run clean && npm run build",
+		"clean": "rm -rf dist .expo",
+		"force-build": "npm run clean && npm run build",
+		"lint": "eslint . && npm run typecheck",
+		"start": "expo start",
+		"test": "node --test",
+		"typecheck": "tsc --noEmit"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"main": "index.ts",
+	"dependencies": {
+		"@react-navigation/native": "^7.2.1",
+		"@twyr/design-system": "*",
+		"@twyr/ui-kit": "*",
+		"expo": "~55.0.8",
+		"react": "^19.2.4",
+		"react-native": "0.84.1",
+		"solito": "^5.0.0",
+		"tamagui": "^1.144.4"
+	}
+}

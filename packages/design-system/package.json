@@ -1,0 +1,67 @@
+{
+	"name": "@twyr/design-system",
+	"type": "module",
+	"displayName": "Design System",
+	"description": "Design System package for twyr-frontend-monorepo in node.js",
+	"homepage": "https://github.com/twyr/twyr-frontend-monorepo/tree/main/packages/design-system",
+	"license": "MITNFA",
+	"version": "0.1.0",
+	"readme": "README.md",
+	"private": true,
+	"keywords": [
+		"frontend",
+		"monorepo",
+		"twyr",
+		"typescript",
+		"nodejs",
+		"package",
+		"design",
+		"system",
+		"design-system"
+	],
+	"author": {
+		"name": "Vish Desai",
+		"email": "vish.desai@twyr.in",
+		"url": "https://github.com/twyr/"
+	},
+	"contributors": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"maintainers": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "ssh://git@github.com:twyr/twyr-frontend-monorepo.git"
+	},
+	"bugs": {
+		"url": "https://github.com/twyr/twyr-frontend-monorepo/issues"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json --noEmit",
+		"build:clean": "npm run clean && npm run build",
+		"clean": "rm -rf dist tsconfig.tsbuildinfo",
+		"force-build": "npm run clean && npm run build",
+		"lint": "eslint . && npm run typecheck",
+		"test": "node --test",
+		"typecheck": "tsc -p tsconfig.json --noEmit"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"main": "src/index.ts",
+	"types": "src/index.ts",
+	"dependencies": {
+		"@tamagui/config": "^1.144.4",
+		"@tamagui/core": "^1.144.4",
+		"tamagui": "^1.144.4"
+	}
+}
