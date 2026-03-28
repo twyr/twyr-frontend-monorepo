@@ -59,8 +59,8 @@
 	"main": "src/index.ts",
 	"types": "src/index.ts",
 	"dependencies": {
-		"@twyr/core": "*",
-		"@twyr/users-profile-shared": "*",
-		"zod": "^4.3.6"
+		"@twyr/core": "0.1.0",
+		"@twyr/users-profile-shared": "0.1.0",
+		"zod": "4.3.6"
 	}
 }

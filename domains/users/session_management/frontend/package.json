@@ -60,12 +60,12 @@
 	"main": "src/index.ts",
 	"types": "src/index.ts",
 	"dependencies": {
-		"@twyr/core": "*",
-		"@twyr/ui-composed": "*",
-		"@twyr/ui-kit": "*",
-		"@twyr/users-session-management-shared": "*",
-		"react": "^19.2.4",
+		"@twyr/core": "0.1.0",
+		"@twyr/ui-composed": "0.1.0",
+		"@twyr/ui-kit": "0.1.0",
+		"@twyr/users-session-management-shared": "0.1.0",
+		"react": "19.2.4",
 		"react-native": "0.84.1",
-		"tamagui": "^1.144.4"
+		"tamagui": "1.144.4"
 	}
 }

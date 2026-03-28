@@ -1,9 +1,21 @@
 'use client';
 
 import { H1, Paragraph, XStack, YStack } from 'tamagui';
-import { Button, Card, Input } from '@twyr/ui-kit';
+import { useWebThemeMode } from '@twyr/app-providers/src/web';
+import {
+	ArrowRightIcon,
+	BoltIcon,
+	Button,
+	Card,
+	Input,
+	LayoutDashboardIcon,
+	ShieldCheckIcon,
+	ThemeToggle
+} from '@twyr/ui-kit';
 
 export default function HomePage() {
+	const { themeMode, setThemeMode } = useWebThemeMode();
+
 	return (
 		<main>
 			<YStack
@@ -12,23 +24,32 @@ export default function HomePage() {
 				padding="$8"
 				gap="$6"
 			>
-				<YStack gap="$3" maxWidth={760}>
-					<Paragraph
-						color="$accent"
-						fontWeight="700"
-						textTransform="uppercase"
-					>
-						Twyr Platform
-					</Paragraph>
-					<H1 color="$color" size="$10">
-						Premium SaaS foundation, wired for Tamagui.
-					</H1>
-					<Paragraph color="$colorMuted" size="$5">
-						This shell is using semantic theme tokens derived from
-						the standard Tailwind palette, tuned for a rich,
-						high-end product surface.
-					</Paragraph>
-				</YStack>
+				<XStack
+					justifyContent="space-between"
+					alignItems="flex-start"
+					gap="$4"
+					flexWrap="wrap"
+				>
+					<YStack gap="$3" maxWidth={760}>
+						<Paragraph
+							color="$accent"
+							fontWeight="700"
+							textTransform="uppercase"
+						>
+							Twyr Platform
+						</Paragraph>
+						<H1 color="$color" size="$10">
+							Premium SaaS foundation, wired for Tamagui.
+						</H1>
+						<Paragraph color="$colorMuted" size="$5">
+							This shell is using semantic theme tokens derived
+							from the standard Tailwind palette, tuned for a
+							rich, high-end product surface.
+						</Paragraph>
+					</YStack>
+
+					<ThemeToggle value={themeMode} onChange={setThemeMode} />
+				</XStack>
 
 				<XStack gap="$5" flexWrap="wrap">
 					<YStack width={420} maxWidth="100%">
@@ -46,7 +67,9 @@ export default function HomePage() {
 									inherit Twyr theme semantics.
 								</Paragraph>
 								<Input placeholder="Work email" />
-								<Button>Book demo</Button>
+								<Button iconAfter={ArrowRightIcon}>
+									Book demo
+								</Button>
 							</YStack>
 						</Card>
 					</YStack>
@@ -61,15 +84,30 @@ export default function HomePage() {
 								>
 									Signals
 								</Paragraph>
-								<Paragraph color="$colorMuted">
-									99.99% uptime target
-								</Paragraph>
-								<Paragraph color="$colorMuted">
-									Multi-surface design system
-								</Paragraph>
-								<Paragraph color="$colorMuted">
-									BFF + bounded-context architecture
-								</Paragraph>
+								<XStack alignItems="center" gap="$3">
+									<ShieldCheckIcon
+										color="$accent"
+										size={18}
+									/>
+									<Paragraph color="$colorMuted">
+										99.99% uptime target
+									</Paragraph>
+								</XStack>
+								<XStack alignItems="center" gap="$3">
+									<LayoutDashboardIcon
+										color="$accent"
+										size={18}
+									/>
+									<Paragraph color="$colorMuted">
+										Multi-surface design system
+									</Paragraph>
+								</XStack>
+								<XStack alignItems="center" gap="$3">
+									<BoltIcon color="$accent" size={18} />
+									<Paragraph color="$colorMuted">
+										BFF + bounded-context architecture
+									</Paragraph>
+								</XStack>
 							</YStack>
 						</Card>
 					</YStack>

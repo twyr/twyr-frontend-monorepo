@@ -47,9 +47,9 @@
 	},
 	"packageManager": "npm@11.12.1",
 	"scripts": {
-		"dev": "turbo run dev",
-		"dev:web": "turbo run dev --filter=@twyr/web-shell",
-		"dev:mobile": "turbo run dev --filter=@twyr/mobile-shell",
+		"dev": "node ./scripts/run-turbo-dev.mjs run dev",
+		"dev:web": "node ./scripts/run-turbo-dev.mjs run dev --filter=@twyr/web-shell",
+		"dev:mobile": "node ./scripts/run-turbo-dev.mjs run dev --filter=@twyr/mobile-shell",
 		"build": "turbo run build",
 		"build:web": "npm run tamagui:build && npm --workspace @twyr/web-shell run build",
 		"build:clean": "npm run clean && npm run build",
@@ -67,11 +67,11 @@
 		"node": ">=18.0.0"
 	},
 	"devDependencies": {
-		"@tamagui/cli": "^1.144.4",
+		"@tamagui/cli": "1.144.4",
 		"@commitlint/cli": "20.5.0",
 		"@commitlint/config-conventional": "20.5.0",
 		"@eslint/js": "10.0.1",
-		"@types/node": "^25.5.0",
+		"@types/node": "25.5.0",
 		"commitizen": "4.3.1",
 		"conventional-changelog-cli": "5.0.0",
 		"conventional-changelog-conventionalcommits": "9.3.0",
@@ -92,8 +92,8 @@
 		"lint-staged": "16.4.0",
 		"npm-check-updates": "19.6.6",
 		"prettier": "3.8.1",
-		"turbo": "^2.8.20",
-		"typescript": "^5.5.4",
+		"turbo": "2.8.20",
+		"typescript": "5.5.4",
 		"typescript-eslint": "8.57.2"
 	},
 	"workspaces": [

@@ -1,42 +1,31 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "jsx": "react-jsx",
-    "strict": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@twyr/design-system": [
-        "packages/design-system/src"
-      ],
-      "@twyr/ui-kit": [
-        "packages/ui-kit/src"
-      ],
-      "@twyr/ui-composed": [
-        "packages/ui-composed/src"
-      ],
-      "@twyr/core": [
-        "packages/core/src"
-      ],
-      "@twyr/platform": [
-        "packages/platform/src"
-      ],
-      "@twyr/system-administrators-profile-shared": [
-        "domains/system_administrators/profile/shared/src"
-      ],
-      "@twyr/system-administrators-session-management-shared": [
-        "domains/system_administrators/session_management/shared/src"
-      ],
-      "@twyr/users-profile-shared": [
-        "domains/users/profile/shared/src"
-      ],
-      "@twyr/users-session-management-shared": [
-        "domains/users/session_management/shared/src"
-      ]
-    }
-  }
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"jsx": "react-jsx",
+		"strict": true,
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"baseUrl": ".",
+		"paths": {
+			"@twyr/app-providers": ["packages/app-providers/src"],
+			"@twyr/design-system": ["packages/design-system/src"],
+			"@twyr/ui-kit": ["packages/ui-kit/src"],
+			"@twyr/ui-composed": ["packages/ui-composed/src"],
+			"@twyr/core": ["packages/core/src"],
+			"@twyr/platform": ["packages/platform/src"],
+			"@twyr/system-administrators-profile-shared": [
+				"domains/system_administrators/profile/shared/src"
+			],
+			"@twyr/system-administrators-session-management-shared": [
+				"domains/system_administrators/session_management/shared/src"
+			],
+			"@twyr/users-profile-shared": ["domains/users/profile/shared/src"],
+			"@twyr/users-session-management-shared": [
+				"domains/users/session_management/shared/src"
+			]
+		}
+	}
 }

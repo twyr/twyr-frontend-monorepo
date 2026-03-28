@@ -1,0 +1,75 @@
+{
+	"name": "@twyr/web-system-administrators",
+	"type": "module",
+	"displayName": "Web System Administrators",
+	"description": "System administrators web application for twyr-frontend-monorepo in node.js",
+	"homepage": "https://github.com/twyr/twyr-frontend-monorepo/tree/main/apps/web-system-administrators",
+	"license": "MITNFA",
+	"version": "0.1.0",
+	"readme": "README.md",
+	"private": true,
+	"keywords": [
+		"frontend",
+		"monorepo",
+		"twyr",
+		"typescript",
+		"nodejs",
+		"application",
+		"web",
+		"system-administrators"
+	],
+	"author": {
+		"name": "Vish Desai",
+		"email": "vish.desai@twyr.in",
+		"url": "https://github.com/twyr/"
+	},
+	"contributors": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"maintainers": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "ssh://git@github.com:twyr/twyr-frontend-monorepo.git"
+	},
+	"bugs": {
+		"url": "https://github.com/twyr/twyr-frontend-monorepo/issues"
+	},
+	"scripts": {
+		"dev": "next dev --port 3002",
+		"build": "next build",
+		"build:clean": "npm run clean && npm run build",
+		"clean": "rm -rf .next out",
+		"force-build": "npm run clean && npm run build",
+		"lint": "eslint . && npm run typecheck",
+		"start": "next start",
+		"test": "node --test",
+		"typecheck": "tsc --noEmit"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"dependencies": {
+		"@twyr/app-providers": "0.1.0",
+		"@twyr/app-shells": "0.1.0",
+		"next": "16.2.1",
+		"react": "19.2.4",
+		"react-dom": "19.2.4",
+		"react-native": "0.84.1",
+		"react-native-web": "0.21.2",
+		"tamagui": "1.144.4"
+	},
+	"devDependencies": {
+		"@types/react": "19.2.14",
+		"@types/react-dom": "19.2.3"
+	}
+}

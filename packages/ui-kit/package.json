@@ -60,10 +60,14 @@
 	"main": "src/index.ts",
 	"types": "src/index.ts",
 	"dependencies": {
-		"@tamagui/toast": "^1.144.4",
-		"@twyr/design-system": "*",
-		"react": "^19.2.4",
+		"@tabler/icons-react": "^3.41.0",
+		"@tabler/icons-react-native": "^3.41.0",
+		"@tamagui/toast": "1.144.4",
+		"@twyr/design-system": "0.1.0",
+		"burnt": "0.12.2",
+		"react": "19.2.4",
 		"react-native": "0.84.1",
-		"tamagui": "^1.144.4"
+		"react-native-svg": "^15.15.4",
+		"tamagui": "1.144.4"
 	}
 }

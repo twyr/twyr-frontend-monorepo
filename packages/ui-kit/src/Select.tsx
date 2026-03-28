@@ -1,6 +1,8 @@
 import React from 'react';
 import { Select as TamaguiSelect } from 'tamagui';
 
+import { ChevronDownIcon } from './icons';
+
 type Option = { label: string; value: string };
 
 type Props = {
@@ -18,10 +20,7 @@ export function Select({
 }: Props) {
 	return (
 		<TamaguiSelect value={value} onValueChange={onValueChange}>
-			<TamaguiSelect.Trigger
-				width={220}
-				iconAfter={<TamaguiSelect.Icon />}
-			>
+			<TamaguiSelect.Trigger width={220} iconAfter={ChevronDownIcon}>
 				<TamaguiSelect.Value placeholder={placeholder} />
 			</TamaguiSelect.Trigger>
 

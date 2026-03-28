@@ -1,13 +1,8 @@
 'use client';
 
 import type { PropsWithChildren } from 'react';
-import { TamaguiProvider, Theme } from 'tamagui';
-import { tamaguiConfig } from '@twyr/design-system';
+import { TwyrWebProviders } from '@twyr/app-providers/src/web';
 
 export function Providers({ children }: PropsWithChildren) {
-	return (
-		<TamaguiProvider config={tamaguiConfig} defaultTheme="light">
-			<Theme name="light">{children}</Theme>
-		</TamaguiProvider>
-	);
+	return <TwyrWebProviders>{children}</TwyrWebProviders>;
 }

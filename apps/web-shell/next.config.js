@@ -5,6 +5,7 @@ const nextConfig = {
 		'@tamagui/core',
 		'@tamagui/web',
 		'@tamagui/toast',
+		'@twyr/app-providers',
 		'@twyr/design-system',
 		'@twyr/ui-kit',
 		'@twyr/ui-composed'

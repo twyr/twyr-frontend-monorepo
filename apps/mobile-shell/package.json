@@ -46,13 +46,13 @@
 		"url": "https://github.com/twyr/twyr-frontend-monorepo/issues"
 	},
 	"scripts": {
-		"dev": "expo start",
+		"dev": "expo start --clear --port 8081",
 		"build": "expo export",
 		"build:clean": "npm run clean && npm run build",
 		"clean": "rm -rf dist .expo",
 		"force-build": "npm run clean && npm run build",
 		"lint": "eslint . && npm run typecheck",
-		"start": "expo start",
+		"start": "expo start --clear --port 8081",
 		"test": "node --test",
 		"typecheck": "tsc --noEmit"
 	},
@@ -61,13 +61,14 @@
 	},
 	"main": "index.ts",
 	"dependencies": {
-		"@react-navigation/native": "^7.2.1",
-		"@twyr/design-system": "*",
-		"@twyr/ui-kit": "*",
-		"expo": "~55.0.9",
-		"react": "^19.2.4",
+		"@react-navigation/native": "7.2.1",
+		"@twyr/app-providers": "^0.1.0",
+		"@twyr/design-system": "0.1.0",
+		"@twyr/ui-kit": "0.1.0",
+		"expo": "55.0.9",
+		"react": "19.2.4",
 		"react-native": "0.84.1",
-		"solito": "^5.0.0",
-		"tamagui": "^1.144.4"
+		"solito": "5.0.0",
+		"tamagui": "1.144.4"
 	}
 }
