@@ -59,6 +59,6 @@
 	"types": "src/index.ts",
 	"dependencies": {
 		"expo-document-picker": "~55.0.9",
-		"expo-image-picker": "~55.0.13"
+		"expo-image-picker": "~55.0.14"
 	}
 }

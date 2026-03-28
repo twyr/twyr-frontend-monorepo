@@ -45,7 +45,7 @@
 	"bugs": {
 		"url": "https://github.com/twyr/twyr-frontend-monorepo/issues"
 	},
-	"packageManager": "npm@9.8.1",
+	"packageManager": "npm@11.12.1",
 	"scripts": {
 		"dev": "turbo run dev",
 		"dev:web": "turbo run dev --filter=@twyr/web-shell",
@@ -84,13 +84,13 @@
 		"eslint-plugin-n": "17.24.0",
 		"eslint-plugin-prettier": "5.5.5",
 		"eslint-plugin-security": "4.0.0",
-		"eslint-plugin-unicorn": "63.0.0",
-		"globals": "16.4.0",
+		"eslint-plugin-unicorn": "64.0.0",
+		"globals": "17.4.0",
 		"husky": "9.1.7",
 		"is-ci": "4.1.0",
 		"jsonc-eslint-parser": "3.1.0",
 		"lint-staged": "16.4.0",
-		"npm-check-updates": "19.6.5",
+		"npm-check-updates": "19.6.6",
 		"prettier": "3.8.1",
 		"turbo": "^2.8.20",
 		"typescript": "^5.5.4",
