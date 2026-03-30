@@ -1,5 +1,4 @@
 import React from 'react';
-import { Platform } from 'react-native';
 import { Button, Card } from '@twyr/ui-kit';
 import { Paragraph, YStack } from 'tamagui';
 
@@ -23,31 +22,25 @@ export function FileUpload({
 	const [files, setFiles] = React.useState<SelectedFile[]>([]);
 
 	const fakeSelect = () => {
-		const selected =
-			Platform.OS === 'web'
-				? [
-						{
-							name: 'proposal.pdf',
-							type: 'application/pdf',
-							size: 120000
-						}
-					]
-				: [
-						{
-							name: 'camera-image.jpg',
-							type: 'image/jpeg',
-							size: 86000
-						}
-					];
+		const selected = [
+			{
+				name: 'artifact-spec.pdf',
+				type: 'application/pdf',
+				size: 120000
+			},
+			{
+				name: 'ui-preview.png',
+				type: 'image/png',
+				size: 86000
+			}
+		];
 		setFiles(selected);
 		onSelect?.(selected);
 	};
 
 	return (
 		<Card title={title} description={description}>
-			<Button onPress={fakeSelect}>
-				{Platform.OS === 'web' ? 'Choose files' : 'Pick file'}
-			</Button>
+			<Button onPress={fakeSelect}>Add sample files</Button>
 			<YStack gap="$2">
 				{files.map((file) => (
 					<Paragraph key={file.name} color="$colorMuted">

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Platform } from 'react-native';
-import { Card, TextArea } from '@twyr/ui-kit';
-import { Button, Paragraph, XStack, YStack } from 'tamagui';
+import { Button, Card, TextArea } from '@twyr/ui-kit';
+import { Paragraph, XStack, YStack } from 'tamagui';
 
 type Props = {
 	value: string;
@@ -16,16 +15,18 @@ export function RichEditor({ value, onChange, label = 'Rich text' }: Props) {
 	return (
 		<Card
 			title={label}
-			description={
-				Platform.OS === 'web'
-					? 'Lexical-ready scaffold for web, with native-friendly fallback.'
-					: 'Native fallback editor scaffold.'
-			}
+			description="Lexical-ready scaffold with a shared markdown-style fallback for web and mobile."
 		>
 			<XStack gap="$2" flexWrap="wrap">
-				<Button onPress={() => surround('**')}>Bold</Button>
-				<Button onPress={() => surround('_')}>Italic</Button>
-				<Button onPress={() => surround('## ')}>Heading</Button>
+				<Button tone="secondary" onPress={() => surround('**')}>
+					Bold
+				</Button>
+				<Button tone="accent" onPress={() => surround('_')}>
+					Italic
+				</Button>
+				<Button tone="neutral" onPress={() => surround('## ')}>
+					Heading
+				</Button>
 			</XStack>
 			<TextArea value={value} onChangeText={onChange} minHeight={180} />
 			<YStack>

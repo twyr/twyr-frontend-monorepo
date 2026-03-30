@@ -25,6 +25,7 @@ export function DataTable<T extends RowData>({
 	columns,
 	data
 }: Props<T>) {
+	const headerTones = ['primary', 'secondary', 'accent', 'primary'] as const;
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const table = useReactTable({
 		data,
@@ -46,18 +47,22 @@ export function DataTable<T extends RowData>({
 						gap="$3"
 					>
 						{table.getHeaderGroups().map((headerGroup) =>
-							headerGroup.headers.map((header) => (
+							headerGroup.headers.map((header, index) => (
 								<YStack key={header.id} minWidth={160} flex={1}>
 									<Button
-										chromeless
+										tone={
+											headerTones[
+												index % headerTones.length
+											]
+										}
 										onPress={() => {
 											header.column.toggleSorting(
 												header.column.getIsSorted() ===
 													'asc'
 											);
 										}}
+										width="100%"
 										justifyContent="flex-start"
-										paddingHorizontal={0}
 									>
 										{header.isPlaceholder
 											? null
@@ -103,12 +108,14 @@ export function DataTable<T extends RowData>({
 				</Paragraph>
 				<XStack gap="$2">
 					<Button
+						tone="neutral"
 						disabled={!table.getCanPreviousPage()}
 						onPress={() => table.previousPage()}
 					>
 						Previous
 					</Button>
 					<Button
+						tone="accent"
 						disabled={!table.getCanNextPage()}
 						onPress={() => table.nextPage()}
 					>

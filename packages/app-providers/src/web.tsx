@@ -8,6 +8,7 @@ import {
 	useMemo,
 	useState
 } from 'react';
+import { ToastProvider } from '@tamagui/toast';
 import { TamaguiProvider, Theme } from 'tamagui';
 import { tamaguiConfig } from '@twyr/design-system';
 import { type ThemeMode } from '@twyr/ui-kit';
@@ -100,7 +101,9 @@ export function TwyrWebProviders({ children }: PropsWithChildren) {
 				config={tamaguiConfig}
 				defaultTheme={resolvedTheme}
 			>
-				<Theme name={resolvedTheme}>{children}</Theme>
+				<Theme name={resolvedTheme}>
+					<ToastProvider>{children}</ToastProvider>
+				</Theme>
 			</TamaguiProvider>
 		</WebThemeContext.Provider>
 	);

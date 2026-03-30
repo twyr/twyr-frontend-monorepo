@@ -1,4 +1,5 @@
 import { createTokens } from 'tamagui';
+import { radiusScale, sizeScale, spaceScale, zIndexScale } from './foundations';
 import { tailwindColors } from './tailwind.colors';
 
 export const tokens = createTokens({
@@ -78,54 +79,8 @@ export const tokens = createTokens({
 		red900: tailwindColors.red[900],
 		red950: tailwindColors.red[950]
 	},
-	size: {
-		true: 16,
-		0: 0,
-		1: 4,
-		2: 8,
-		3: 12,
-		4: 16,
-		5: 20,
-		6: 24,
-		7: 28,
-		8: 32,
-		9: 40,
-		10: 48,
-		11: 56,
-		12: 64
-	},
-	space: {
-		true: 16,
-		0: 0,
-		1: 4,
-		2: 8,
-		3: 12,
-		4: 16,
-		5: 20,
-		6: 24,
-		7: 28,
-		8: 32,
-		9: 40,
-		10: 48,
-		11: 56,
-		12: 64
-	},
-	radius: {
-		0: 0,
-		1: 6,
-		2: 10,
-		3: 14,
-		4: 18,
-		5: 24,
-		6: 32
-	},
-	zIndex: {
-		0: 0,
-		1: 100,
-		2: 200,
-		3: 300,
-		4: 400,
-		5: 500,
-		6: 1000
-	}
+	size: sizeScale,
+	space: spaceScale,
+	radius: radiusScale,
+	zIndex: zIndexScale
 });

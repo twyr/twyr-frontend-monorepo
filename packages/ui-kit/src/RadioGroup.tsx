@@ -6,6 +6,7 @@ import {
 	XStack,
 	YStack
 } from 'tamagui';
+import { controlHeights } from './ControlStyles';
 
 type Option = { label: string; value: string };
 
@@ -34,10 +35,16 @@ export function RadioGroup({
 				gap="$2"
 			>
 				{options.map((option) => (
-					<XStack key={option.value} alignItems="center" gap="$3">
+					<XStack
+						key={option.value}
+						alignItems="center"
+						gap="$3"
+						minHeight={controlHeights.default}
+					>
 						<TamaguiRadioGroup.Item
 							value={option.value}
 							id={`${name}-${option.value}`}
+							size="$4"
 						>
 							<TamaguiRadioGroup.Indicator>
 								<Circle backgroundColor="$color" size={8} />

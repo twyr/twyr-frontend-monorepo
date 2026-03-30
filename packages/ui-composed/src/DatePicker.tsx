@@ -1,7 +1,6 @@
 import React from 'react';
-import { Calendar } from 'react-native-calendars';
-import { Card, Input } from '@twyr/ui-kit';
-import { Button, Paragraph, XStack, YStack } from 'tamagui';
+import { Button, Card, Input } from '@twyr/ui-kit';
+import { Paragraph, XStack, YStack } from 'tamagui';
 
 type Props = {
 	value?: string;
@@ -12,6 +11,7 @@ type Props = {
 export function DatePicker({ value, onChange, label = 'Select date' }: Props) {
 	const [open, setOpen] = React.useState(false);
 	const selected = value || '';
+	const presets = ['2026-03-30', '2026-04-06', '2026-04-13'];
 
 	return (
 		<YStack gap="$3">
@@ -19,25 +19,33 @@ export function DatePicker({ value, onChange, label = 'Select date' }: Props) {
 			<XStack gap="$2" alignItems="center">
 				<Input
 					value={selected}
-					readOnly
+					onChangeText={onChange}
 					flex={1}
 					placeholder="YYYY-MM-DD"
 				/>
-				<Button onPress={() => setOpen((current) => !current)}>
+				<Button
+					tone="secondary"
+					onPress={() => setOpen((current) => !current)}
+				>
 					{open ? 'Hide' : 'Pick'}
 				</Button>
 			</XStack>
 			{open ? (
-				<Card>
-					<Calendar
-						markedDates={
-							selected ? { [selected]: { selected: true } } : {}
-						}
-						onDayPress={(day) => {
-							onChange?.(day.dateString);
-							setOpen(false);
-						}}
-					/>
+				<Card description="Shared scaffold with preset date chips and manual entry.">
+					<XStack gap="$2" flexWrap="wrap">
+						{presets.map((preset) => (
+							<Button
+								key={preset}
+								chromeless
+								onPress={() => {
+									onChange?.(preset);
+									setOpen(false);
+								}}
+							>
+								{preset}
+							</Button>
+						))}
+					</XStack>
 				</Card>
 			) : null}
 		</YStack>

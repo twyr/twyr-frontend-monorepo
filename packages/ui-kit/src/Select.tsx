@@ -1,5 +1,6 @@
 import React from 'react';
 import { Select as TamaguiSelect } from 'tamagui';
+import { controlHeights, controlPadding } from './ControlStyles';
 
 import { ChevronDownIcon } from './icons';
 
@@ -10,17 +11,25 @@ type Props = {
 	onValueChange: (value: string) => void;
 	options: Option[];
 	placeholder?: string;
+	width?: number | string;
 };
 
 export function Select({
 	value,
 	onValueChange,
 	options,
-	placeholder = 'Select an option'
+	placeholder = 'Select an option',
+	width = '100%'
 }: Props) {
 	return (
 		<TamaguiSelect value={value} onValueChange={onValueChange}>
-			<TamaguiSelect.Trigger width={220} iconAfter={ChevronDownIcon}>
+			<TamaguiSelect.Trigger
+				width={width}
+				minHeight={controlHeights.default}
+				paddingHorizontal={controlPadding.horizontal}
+				paddingVertical={controlPadding.vertical}
+				iconAfter={ChevronDownIcon}
+			>
 				<TamaguiSelect.Value placeholder={placeholder} />
 			</TamaguiSelect.Trigger>
 
@@ -32,6 +41,8 @@ export function Select({
 								key={option.value}
 								index={index}
 								value={option.value}
+								minHeight={controlHeights.default}
+								paddingHorizontal={controlPadding.horizontal}
 							>
 								<TamaguiSelect.ItemText>
 									{option.label}

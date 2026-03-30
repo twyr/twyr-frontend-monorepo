@@ -1,4 +1,5 @@
 import React from 'react';
+import { surfaceElevations, type SurfaceElevation } from '@twyr/design-system';
 import { Paragraph, XStack, YStack } from 'tamagui';
 
 type Props = {
@@ -6,9 +7,39 @@ type Props = {
 	description?: string;
 	footer?: React.ReactNode;
 	children?: React.ReactNode;
+	elevation?: SurfaceElevation;
 };
 
-export function Card({ title, description, footer, children }: Props) {
+function getSurfaceElevation(elevation: SurfaceElevation) {
+	switch (elevation) {
+		case 'flat': {
+			return surfaceElevations.flat;
+		}
+		case 'xs': {
+			return surfaceElevations.xs;
+		}
+		case 'md': {
+			return surfaceElevations.md;
+		}
+		case 'lg': {
+			return surfaceElevations.lg;
+		}
+		case 'sm':
+		default: {
+			return surfaceElevations.sm;
+		}
+	}
+}
+
+export function Card({
+	title,
+	description,
+	footer,
+	children,
+	elevation = 'sm'
+}: Props) {
+	const elevationStyle = getSurfaceElevation(elevation);
+
 	return (
 		<YStack
 			backgroundColor="$background"
@@ -17,9 +48,7 @@ export function Card({ title, description, footer, children }: Props) {
 			borderRadius="$5"
 			padding="$4"
 			gap="$3"
-			shadowColor="$shadowColor"
-			shadowOpacity={0.12}
-			shadowRadius={16}
+			{...elevationStyle}
 		>
 			{title ? (
 				<Paragraph fontWeight="700" fontSize="$6">

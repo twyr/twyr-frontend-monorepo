@@ -1,10 +1,14 @@
 import { createTamagui } from 'tamagui';
 import { config as baseConfig } from '@tamagui/config/v3';
+import { animations } from './animations';
+import { fonts } from './fonts';
 import { tokens } from './tokens';
 import { themes } from './themes';
 
 export const tamaguiConfig = createTamagui({
 	...baseConfig,
+	animations,
+	fonts,
 	tokens,
 	themes,
 	defaultTheme: 'light',
@@ -17,6 +21,10 @@ export const tamaguiConfig = createTamagui({
 		short: { maxHeight: 820 },
 		hoverNone: { hover: 'none' },
 		pointerCoarse: { pointer: 'coarse' }
+	},
+	settings: {
+		...baseConfig.settings,
+		defaultFont: 'body'
 	}
 });
 

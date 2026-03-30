@@ -8,6 +8,7 @@ import {
 	useState
 } from 'react';
 import { useColorScheme } from 'react-native';
+import { ToastProvider } from '@tamagui/toast';
 import { TamaguiProvider, Theme, YStack } from 'tamagui';
 import { tamaguiConfig } from '@twyr/design-system';
 import { type MobileThemeMode } from '@twyr/ui-kit';
@@ -52,7 +53,9 @@ export function TwyrMobileProviders({ children }: PropsWithChildren) {
 				defaultTheme={resolvedTheme}
 			>
 				<Theme key={resolvedTheme} name={resolvedTheme}>
-					<YStack flex={1}>{children}</YStack>
+					<ToastProvider>
+						<YStack flex={1}>{children}</YStack>
+					</ToastProvider>
 				</Theme>
 			</TamaguiProvider>
 		</MobileThemeContext.Provider>

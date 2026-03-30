@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion as TamaguiAccordion } from 'tamagui';
+import { Accordion as TamaguiAccordion, Text } from 'tamagui';
 
 type Item = { id: string; title: string; content: React.ReactNode };
 
@@ -11,7 +11,7 @@ export function Accordion({ items }: Props) {
 			{items.map((item) => (
 				<TamaguiAccordion.Item key={item.id} value={item.id}>
 					<TamaguiAccordion.Trigger>
-						{item.title}
+						<Text>{item.title}</Text>
 					</TamaguiAccordion.Trigger>
 					<TamaguiAccordion.Content>
 						{item.content}

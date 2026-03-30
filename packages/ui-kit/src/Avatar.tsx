@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar as TamaguiAvatar } from 'tamagui';
+import { Avatar as TamaguiAvatar, Text } from 'tamagui';
 
 type Props = {
 	name: string;
@@ -25,7 +25,9 @@ export function Avatar({ name, src, size = 40 }: Props) {
 				justifyContent="center"
 				alignItems="center"
 			>
-				{fallback}
+				<Text color="$primaryForeground" fontWeight="700">
+					{fallback}
+				</Text>
 			</TamaguiAvatar.Fallback>
 		</TamaguiAvatar>
 	);

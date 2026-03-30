@@ -13,10 +13,13 @@ export function Sheet({ open, onOpenChange, children }: Props) {
 			modal
 			open={open}
 			onOpenChange={onOpenChange}
-			snapPointsMode="fit"
+			position={0}
+			snapPoints={[70]}
+			snapPointsMode="percent"
 			dismissOnOverlayPress
 		>
 			<TamaguiSheet.Overlay />
+			<TamaguiSheet.Handle />
 			<TamaguiSheet.Frame padding="$4">{children}</TamaguiSheet.Frame>
 		</TamaguiSheet>
 	);

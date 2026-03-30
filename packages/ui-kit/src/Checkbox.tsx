@@ -1,5 +1,6 @@
 import React from 'react';
 import { Checkbox as TamaguiCheckbox, Label, XStack } from 'tamagui';
+import { controlHeights } from './ControlStyles';
 
 type Props = {
 	label?: string;
@@ -15,10 +16,11 @@ export function Checkbox({
 	id
 }: Props) {
 	return (
-		<XStack alignItems="center" gap="$3">
+		<XStack alignItems="center" gap="$3" minHeight={controlHeights.default}>
 			<TamaguiCheckbox
 				id={id}
 				checked={checked}
+				size="$4"
 				onCheckedChange={(value) => onCheckedChange?.(Boolean(value))}
 			>
 				<TamaguiCheckbox.Indicator />

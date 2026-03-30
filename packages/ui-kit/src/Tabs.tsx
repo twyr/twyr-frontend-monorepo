@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tabs as TamaguiTabs } from 'tamagui';
+import { Tabs as TamaguiTabs, Text } from 'tamagui';
 
 type TabItem = { key: string; label: string; content: React.ReactNode };
 
@@ -18,7 +18,7 @@ export function Tabs({ defaultValue, items }: Props) {
 			<TamaguiTabs.List gap="$2">
 				{items.map((item) => (
 					<TamaguiTabs.Tab key={item.key} value={item.key}>
-						{item.label}
+						<Text>{item.label}</Text>
 					</TamaguiTabs.Tab>
 				))}
 			</TamaguiTabs.List>

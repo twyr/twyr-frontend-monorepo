@@ -1,4 +1,12 @@
 export { tailwindColors } from './tailwind.colors';
+export { animations } from './animations';
+export { bodyFont, fontFamilies, fonts, headingFont } from './fonts';
+export { motion } from './motion';
+export { radius } from './radius';
+export { shadows, surfaceElevations } from './shadows';
+export type { SurfaceElevation } from './shadows';
+export { spacing } from './spacing';
 export { tokens } from './tokens';
 export { themes } from './themes';
 export { tamaguiConfig } from './tamagui.config';
+export { typography } from './typography';

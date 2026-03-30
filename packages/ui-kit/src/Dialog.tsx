@@ -1,4 +1,5 @@
 import React from 'react';
+import { surfaceElevations } from '@twyr/design-system';
 import { Dialog as TamaguiDialog, Paragraph, XStack } from 'tamagui';
 import { Button } from './Button';
 
@@ -31,7 +32,12 @@ export function Dialog({
 					animation="quick"
 					opacity={0.5}
 				/>
-				<TamaguiDialog.Content key="content" bordered elevate gap="$4">
+				<TamaguiDialog.Content
+					key="content"
+					bordered
+					gap="$4"
+					{...surfaceElevations.md}
+				>
 					<TamaguiDialog.Title>{title}</TamaguiDialog.Title>
 					{description ? <Paragraph>{description}</Paragraph> : null}
 					{children}
