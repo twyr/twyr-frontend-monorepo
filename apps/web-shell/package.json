@@ -60,7 +60,8 @@
 		"node": ">=18.0.0"
 	},
 	"dependencies": {
-		"@twyr/app-providers": "^0.1.0",
+		"@twyr/app-providers": "0.1.0",
+		"@twyr/app-shells": "0.1.0",
 		"@twyr/design-system": "0.1.0",
 		"@twyr/ui-kit": "0.1.0",
 		"next": "16.2.1",
