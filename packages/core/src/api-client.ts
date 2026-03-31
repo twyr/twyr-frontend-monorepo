@@ -1,6 +1,13 @@
+import { buildAuthServerUrl } from './auth-server';
+
 export interface ApiClientOptions {
-	baseUrl: string;
+	baseUrl?: string;
 	defaultHeaders?: Record<string, string>;
+}
+
+export interface ApiRequestContext {
+	locale?: string | null;
+	cookieHeader?: string | null;
 }
 
 export class ApiClient {
@@ -8,20 +15,27 @@ export class ApiClient {
 	private readonly defaultHeaders: Record<string, string>;
 
 	constructor(options: ApiClientOptions) {
-		this.baseUrl = options.baseUrl.replace(/\/$/, '');
+		this.baseUrl = (options.baseUrl ?? '').replace(/\/$/, '');
 		this.defaultHeaders = options.defaultHeaders ?? {};
 	}
 
 	async post<TResponse>(
 		path: string,
 		body: unknown,
-		init?: RequestInit
+		init?: RequestInit,
+		context?: ApiRequestContext
 	): Promise<TResponse> {
-		const response = await fetch(`${this.baseUrl}${path}`, {
+		const requestUrl = this.baseUrl
+			? `${this.baseUrl}${path}`
+			: buildAuthServerUrl(path, context);
+		const response = await fetch(requestUrl, {
 			method: 'POST',
 			headers: {
 				'content-type': 'application/json',
 				...this.defaultHeaders,
+				...(context?.cookieHeader
+					? { Cookie: context.cookieHeader }
+					: {}),
 				...(init?.headers ?? {})
 			},
 			body: JSON.stringify(body),
@@ -37,11 +51,21 @@ export class ApiClient {
 		return (await response.json()) as TResponse;
 	}
 
-	async get<TResponse>(path: string, init?: RequestInit): Promise<TResponse> {
-		const response = await fetch(`${this.baseUrl}${path}`, {
+	async get<TResponse>(
+		path: string,
+		init?: RequestInit,
+		context?: ApiRequestContext
+	): Promise<TResponse> {
+		const requestUrl = this.baseUrl
+			? `${this.baseUrl}${path}`
+			: buildAuthServerUrl(path, context);
+		const response = await fetch(requestUrl, {
 			method: 'GET',
 			headers: {
 				...this.defaultHeaders,
+				...(context?.cookieHeader
+					? { Cookie: context.cookieHeader }
+					: {}),
 				...(init?.headers ?? {})
 			},
 			...init

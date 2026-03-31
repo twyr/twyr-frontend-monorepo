@@ -32,22 +32,8 @@ export function MobileThemeToggle({ value, onChange }: Props) {
 				height={40}
 				padding={0}
 				borderRadius={999}
-				borderWidth={1}
-				borderColor="$borderColor"
-				backgroundColor="$background"
 				icon={<ThemeIcon color={iconColor} />}
 				onPress={() => onChange(nextValue)}
-				hoverStyle={{
-					backgroundColor: '$backgroundHover',
-					borderColor: '$borderColorHover'
-				}}
-				pressStyle={{
-					backgroundColor: '$backgroundPress',
-					borderColor: '$borderColorPress'
-				}}
-				focusStyle={{
-					borderColor: '$borderColorFocus'
-				}}
 				accessibilityLabel={`Current theme: ${label}. Switch to ${nextValue}.`}
 			/>
 		</Tooltip>

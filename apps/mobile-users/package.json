@@ -62,6 +62,8 @@
 	"dependencies": {
 		"@twyr/app-providers": "0.1.0",
 		"@twyr/app-shells": "0.1.0",
+		"@twyr/users-profile-frontend": "0.1.0",
+		"@twyr/users-session-management-frontend": "0.1.0",
 		"expo": "55.0.9",
 		"react": "19.2.4",
 		"react-native": "0.84.1",

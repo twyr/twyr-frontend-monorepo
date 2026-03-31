@@ -1,5 +1,5 @@
 import React from 'react';
-import { Select as TamaguiSelect } from 'tamagui';
+import { Select as TamaguiSelect, XStack } from 'tamagui';
 import { controlHeights, controlPadding } from './ControlStyles';
 
 import { ChevronDownIcon } from './icons';
@@ -12,6 +12,9 @@ type Props = {
 	options: Option[];
 	placeholder?: string;
 	width?: number | string;
+	icon?: React.ReactNode;
+	hideValue?: boolean;
+	accessibilityLabel?: string;
 };
 
 export function Select({
@@ -19,7 +22,10 @@ export function Select({
 	onValueChange,
 	options,
 	placeholder = 'Select an option',
-	width = '100%'
+	width = '100%',
+	icon,
+	hideValue = false,
+	accessibilityLabel
 }: Props) {
 	return (
 		<TamaguiSelect value={value} onValueChange={onValueChange}>
@@ -29,8 +35,16 @@ export function Select({
 				paddingHorizontal={controlPadding.horizontal}
 				paddingVertical={controlPadding.vertical}
 				iconAfter={ChevronDownIcon}
+				accessibilityLabel={accessibilityLabel}
 			>
-				<TamaguiSelect.Value placeholder={placeholder} />
+				<XStack gap="$2" alignItems="center" justifyContent="center">
+					{icon}
+					{hideValue ? (
+						<TamaguiSelect.Value placeholder=" " />
+					) : (
+						<TamaguiSelect.Value placeholder={placeholder} />
+					)}
+				</XStack>
 			</TamaguiSelect.Trigger>
 
 			<TamaguiSelect.Content zIndex={200000}>

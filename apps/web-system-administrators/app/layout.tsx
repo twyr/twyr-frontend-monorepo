@@ -4,9 +4,14 @@ import { TwyrWebProviders } from '@twyr/app-providers/src/web';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
-		<html lang="en">
-			<body>
-				<TwyrWebProviders>{children}</TwyrWebProviders>
+		<html lang="en" suppressHydrationWarning>
+			<body suppressHydrationWarning>
+				<TwyrWebProviders
+					languageActor="system_administrators"
+					languageOptionsEndpoint="/api/v1/masterdata/locales"
+				>
+					{children}
+				</TwyrWebProviders>
 			</body>
 		</html>
 	);

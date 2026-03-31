@@ -25,6 +25,7 @@ export function StatCard({ label, value, hint, tone = 'neutral' }: Props) {
 					<YStack
 						paddingHorizontal="$2"
 						paddingVertical="$1"
+						// eslint-disable-next-line security/detect-object-injection
 						backgroundColor={toneMap[tone]}
 						borderRadius="$pill"
 					>

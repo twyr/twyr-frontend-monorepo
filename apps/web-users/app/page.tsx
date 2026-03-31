@@ -1,17 +1,18 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { UsersPortal } from './UsersPortal';
+import { isUsersSessionValid } from './_lib/session';
 
-import { H1, Paragraph, YStack } from 'tamagui';
-import { UserWebShell } from '@twyr/app-shells/src/web/UserWebShell';
+export default async function UsersHomePage() {
+	const cookieStore = await cookies();
+	const cookieHeader = cookieStore
+		.getAll()
+		.map((cookie) => `${cookie.name}=${cookie.value}`)
+		.join('; ');
 
-export default function UsersHomePage() {
-	return (
-		<UserWebShell>
-			<YStack gap="$4">
-				<H1 color="$color">Users</H1>
-				<Paragraph color="$colorHover">
-					Shared user web shell is now wired and ready.
-				</Paragraph>
-			</YStack>
-		</UserWebShell>
-	);
+	if (!(await isUsersSessionValid(cookieHeader))) {
+		redirect('/session-management');
+	}
+
+	return <UsersPortal view="dashboard" serverAuthenticated />;
 }

@@ -996,6 +996,7 @@ export function ArtifactShowcaseCatalog({
 															key={`${themeName}-${key}`}
 															label={key}
 															value={
+																// eslint-disable-next-line security/detect-object-injection
 																themes[
 																	themeName
 																][key]

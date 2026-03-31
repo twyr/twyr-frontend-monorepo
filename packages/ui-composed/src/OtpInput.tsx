@@ -9,6 +9,7 @@ type Props = {
 };
 
 export function OTPInput({ value, length = 6, onChange }: Props) {
+	// eslint-disable-next-line security/detect-object-injection
 	const digits = Array.from({ length }, (_, index) => value[index] ?? '');
 
 	return (
@@ -23,6 +24,7 @@ export function OTPInput({ value, length = 6, onChange }: Props) {
 					maxLength={1}
 					onChangeText={(next) => {
 						const chars = value.split('');
+						// eslint-disable-next-line security/detect-object-injection
 						chars[index] = next.slice(-1);
 						onChange(chars.join('').slice(0, length));
 					}}

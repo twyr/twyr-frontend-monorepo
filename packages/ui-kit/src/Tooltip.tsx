@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tooltip as TamaguiTooltip } from 'tamagui';
+import { isWeb } from 'tamagui';
 
 type Props = {
 	content: React.ReactNode;
@@ -7,15 +7,20 @@ type Props = {
 };
 
 export function Tooltip({ content, children }: Props) {
+	if (!content) {
+		return <>{children}</>;
+	}
+
+	if (!isWeb) {
+		return <>{children}</>;
+	}
+
 	return (
-		<TamaguiTooltip>
-			<TamaguiTooltip.Trigger asChild>{children}</TamaguiTooltip.Trigger>
-			<TamaguiTooltip.Content
-				enterStyle={{ y: -4, opacity: 0 }}
-				exitStyle={{ y: -4, opacity: 0 }}
-			>
-				{content}
-			</TamaguiTooltip.Content>
-		</TamaguiTooltip>
+		<span
+			title={typeof content === 'string' ? content : undefined}
+			style={{ display: 'inline-flex' }}
+		>
+			{children}
+		</span>
 	);
 }

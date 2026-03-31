@@ -1,9 +1,7 @@
-import { ApiClient } from '@twyr/core';
-
-const baseUrl = process.env.TWYR_CORE_API_BASE_URL ?? 'http://localhost:9090';
+import { ApiClient, resolveAuthServerBaseUrl } from '@twyr/core';
 
 export const coreApi = new ApiClient({
-	baseUrl,
+	baseUrl: resolveAuthServerBaseUrl(),
 	defaultHeaders: {
 		'x-twyr-bff': 'users/session_management'
 	}

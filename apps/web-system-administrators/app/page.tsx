@@ -1,18 +1,18 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { SystemAdministratorsPortal } from './SystemAdministratorsPortal';
+import { isSystemAdministratorsSessionValid } from './_lib/session';
 
-import { H1, Paragraph, YStack } from 'tamagui';
-import { SystemAdministratorWebShell } from '@twyr/app-shells/src/web/SystemAdministratorWebShell';
+export default async function SystemAdministratorsHomePage() {
+	const cookieStore = await cookies();
+	const cookieHeader = cookieStore
+		.getAll()
+		.map((cookie) => `${cookie.name}=${cookie.value}`)
+		.join('; ');
 
-export default function SystemAdministratorsHomePage() {
-	return (
-		<SystemAdministratorWebShell>
-			<YStack gap="$4">
-				<H1 color="$color">System Administrators</H1>
-				<Paragraph color="$colorHover">
-					Shared system administrator web shell is now wired and
-					ready.
-				</Paragraph>
-			</YStack>
-		</SystemAdministratorWebShell>
-	);
+	if (!(await isSystemAdministratorsSessionValid(cookieHeader))) {
+		redirect('/session-management');
+	}
+
+	return <SystemAdministratorsPortal view="dashboard" serverAuthenticated />;
 }
