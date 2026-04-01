@@ -12,3 +12,4 @@ export * from './StatCard';
 export * from './AppSidebar';
 export * from './TopNav';
 export * from './ShellFrame';
+export * from './ProfileEditor';

@@ -1,138 +1,131 @@
 import { useEffect, useState } from 'react';
-import type { AppLanguageCode } from '@twyr/core';
-import { Card, Input, Button, Select } from '@twyr/ui-kit';
-import { Text, XStack, YStack } from 'tamagui';
+import type { AppLanguageCode, PortalProfileInput } from '@twyr/core';
+import { ProfileEditor } from '@twyr/ui-composed';
 
 type LanguageOption = {
 	code: string;
 	label: string;
 };
 
-type ProfileForm = {
-	displayName: string;
-	email: string;
-	phoneNumber: string;
-	organization: string;
-	roleTitle: string;
-};
-
 type Props = {
-	profile: ProfileForm;
+	profile: PortalProfileInput;
 	language: AppLanguageCode;
 	languageOptions: LanguageOption[];
+	contactTypesEndpoint: string;
 	onLanguageChange: (language: AppLanguageCode) => void;
-	onSave: (profile: ProfileForm) => Promise<void>;
+	onSave: (profile: PortalProfileInput) => Promise<void>;
+	onAddContact: (contact: {
+		typeId: string;
+		typeName: string;
+		value: string;
+		verified: boolean;
+		isPrimary: boolean;
+	}) => Promise<PortalProfileInput | void>;
+	onMakePrimaryContact: (contact: {
+		id: string;
+		typeName: string;
+		value: string;
+		verified: boolean;
+		isPrimary: boolean;
+	}) => Promise<PortalProfileInput | void>;
+	onDeleteContact: (contactId: string) => Promise<PortalProfileInput | void>;
+	onAddLocale: (locale: {
+		localeId: string;
+		isPrimary: boolean;
+	}) => Promise<PortalProfileInput | void>;
+	onMakePrimaryLocale: (locale: {
+		id: string;
+		localeId: string;
+		isPrimary: boolean;
+	}) => Promise<PortalProfileInput | void>;
+	onDeleteLocale: (localeId: string) => Promise<PortalProfileInput | void>;
 };
 
 export function ProfileScreen({
 	profile,
 	language,
 	languageOptions,
-	onLanguageChange,
-	onSave
+	contactTypesEndpoint,
+	onSave,
+	onAddContact,
+	onMakePrimaryContact,
+	onDeleteContact,
+	onAddLocale,
+	onMakePrimaryLocale,
+	onDeleteLocale
 }: Props) {
-	const [draft, setDraft] = useState(profile);
-	const [status, setStatus] = useState<string | null>(null);
+	const [localizedProfile, setLocalizedProfile] = useState(profile);
 
 	useEffect(() => {
-		setDraft(profile);
+		setLocalizedProfile(profile);
 	}, [profile]);
 
 	return (
-		<YStack gap="$5">
-			<YStack gap="$2">
-				<Text fontSize="$10" fontWeight="700" color="$color">
-					Administrator profile
-				</Text>
-				<Text color="$colorHover">
-					Update operator identity, privilege scope, and language from
-					the post-login workspace.
-				</Text>
-			</YStack>
+		<ProfileEditor
+			title="Administrator profile"
+			description="Update operator names, contacts, and locale assignments from the authenticated workspace."
+			nameCardTitle="Operator names"
+			nameCardDescription="Edit the active locale's administrator name fields in a single responsive row."
+			contactCardTitle="Contacts"
+			contactCardDescription="Review contacts, delete non-primary entries, and choose the primary contact."
+			localeCardTitle="Locales"
+			localeCardDescription="Choose one or more locales for the operator profile."
+			language={language}
+			contactTypesEndpoint={contactTypesEndpoint}
+			profile={localizedProfile}
+			languageOptions={languageOptions}
+			onSave={async (nextProfile) => {
+				await onSave(nextProfile);
+				setLocalizedProfile(nextProfile);
+			}}
+			onAddContact={async (contact) => {
+				const nextProfile = await onAddContact(contact);
+				if (nextProfile) {
+					setLocalizedProfile(nextProfile);
+				}
 
-			<Card
-				title="Operator profile"
-				description="Keep audit-facing administrator details accurate."
-			>
-				<YStack gap="$4">
-					<Input
-						placeholder="Display name"
-						value={draft.displayName}
-						onChangeText={(value) =>
-							setDraft((current) => ({
-								...current,
-								displayName: value
-							}))
-						}
-					/>
-					<Input
-						placeholder="Work email address"
-						value={draft.email}
-						onChangeText={(value) =>
-							setDraft((current) => ({
-								...current,
-								email: value
-							}))
-						}
-					/>
-					<Input
-						placeholder="Mobile number"
-						value={draft.phoneNumber}
-						onChangeText={(value) =>
-							setDraft((current) => ({
-								...current,
-								phoneNumber: value
-									.replace(/\D/g, '')
-									.slice(0, 10)
-							}))
-						}
-						keyboardType="number-pad"
-					/>
-					<Input
-						placeholder="Business unit"
-						value={draft.organization}
-						onChangeText={(value) =>
-							setDraft((current) => ({
-								...current,
-								organization: value
-							}))
-						}
-					/>
-					<Input
-						placeholder="Privilege scope"
-						value={draft.roleTitle}
-						onChangeText={(value) =>
-							setDraft((current) => ({
-								...current,
-								roleTitle: value
-							}))
-						}
-					/>
-					<Select
-						value={language}
-						onValueChange={(value) =>
-							onLanguageChange(value as AppLanguageCode)
-						}
-						options={languageOptions.map((option) => ({
-							label: option.label,
-							value: option.code
-						}))}
-						placeholder="Preferred language"
-					/>
-					<XStack gap="$3">
-						<Button
-							tone="accent"
-							onPress={async () => {
-								await onSave(draft);
-								setStatus('Administrator profile updated.');
-							}}
-						>
-							Save changes
-						</Button>
-					</XStack>
-					{status ? <Text color="$success">{status}</Text> : null}
-				</YStack>
-			</Card>
-		</YStack>
+				return nextProfile;
+			}}
+			onMakePrimaryContact={async (contact) => {
+				const nextProfile = await onMakePrimaryContact(contact);
+				if (nextProfile) {
+					setLocalizedProfile(nextProfile);
+				}
+
+				return nextProfile;
+			}}
+			onDeleteContact={async (contactId) => {
+				const nextProfile = await onDeleteContact(contactId);
+				if (nextProfile) {
+					setLocalizedProfile(nextProfile);
+				}
+
+				return nextProfile;
+			}}
+			onAddLocale={async (locale) => {
+				const nextProfile = await onAddLocale(locale);
+				if (nextProfile) {
+					setLocalizedProfile(nextProfile);
+				}
+
+				return nextProfile;
+			}}
+			onMakePrimaryLocale={async (locale) => {
+				const nextProfile = await onMakePrimaryLocale(locale);
+				if (nextProfile) {
+					setLocalizedProfile(nextProfile);
+				}
+
+				return nextProfile;
+			}}
+			onDeleteLocale={async (localeId) => {
+				const nextProfile = await onDeleteLocale(localeId);
+				if (nextProfile) {
+					setLocalizedProfile(nextProfile);
+				}
+
+				return nextProfile;
+			}}
+		/>
 	);
 }

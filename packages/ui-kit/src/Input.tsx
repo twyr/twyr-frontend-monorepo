@@ -9,6 +9,7 @@ export function Input(props: Props) {
 		<TamaguiInput
 			backgroundColor="$backgroundSoft"
 			borderColor="$borderColor"
+			placeholderTextColor="$colorSoft"
 			focusStyle={{ borderColor: '$primary' }}
 			borderRadius="$4"
 			minHeight={controlHeights.default}

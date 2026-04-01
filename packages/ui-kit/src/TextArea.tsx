@@ -9,6 +9,7 @@ export function TextArea(props: Props) {
 		<TamaguiTextArea
 			backgroundColor="$backgroundSoft"
 			borderColor="$borderColor"
+			placeholderTextColor="$colorSoft"
 			focusStyle={{ borderColor: '$primary' }}
 			borderRadius="$4"
 			minHeight={controlHeights.comfortable * 2}

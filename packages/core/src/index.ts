@@ -1,6 +1,7 @@
 export * from './api-client';
 export * from './auth-server';
 export * from './country-codes';
+export * from './contact-type-options';
 export * from './demo-auth';
 export * from './languages';
 export * from './locale-options';

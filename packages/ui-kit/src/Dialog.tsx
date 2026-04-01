@@ -12,6 +12,7 @@ type Props = {
 	confirmLabel?: string;
 	cancelLabel?: string;
 	onConfirm?: () => void;
+	confirmDisabled?: boolean;
 };
 
 export function Dialog({
@@ -22,8 +23,19 @@ export function Dialog({
 	children,
 	confirmLabel = 'Confirm',
 	cancelLabel = 'Cancel',
-	onConfirm
+	onConfirm,
+	confirmDisabled = false
 }: Props) {
+	const [mounted, setMounted] = React.useState(false);
+
+	React.useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	if (!mounted) {
+		return null;
+	}
+
 	return (
 		<TamaguiDialog modal open={open} onOpenChange={onOpenChange}>
 			<TamaguiDialog.Portal>
@@ -45,7 +57,9 @@ export function Dialog({
 						<TamaguiDialog.Close asChild>
 							<Button chromeless>{cancelLabel}</Button>
 						</TamaguiDialog.Close>
-						<Button onPress={onConfirm}>{confirmLabel}</Button>
+						<Button disabled={confirmDisabled} onPress={onConfirm}>
+							{confirmLabel}
+						</Button>
 					</XStack>
 				</TamaguiDialog.Content>
 			</TamaguiDialog.Portal>

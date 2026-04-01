@@ -11,5 +11,8 @@ export * from './LogoutIcon';
 export * from './MoonIcon';
 export * from './ProfileIcon';
 export * from './ShieldCheckIcon';
+export * from './StarFilledIcon';
+export * from './StarIcon';
 export * from './SunIcon';
+export * from './TrashIcon';
 export * from './types';

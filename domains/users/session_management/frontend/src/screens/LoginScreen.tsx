@@ -183,16 +183,12 @@ export function LoginScreen({
 									}))}
 									placeholder="Select language"
 								/>
-								<Select
-									value={loginCountryCode}
-									onValueChange={setLoginCountryCode}
-									options={countrySelectOptions}
-									placeholder="Select country"
-								/>
-								<Input
-									placeholder="Mobile number"
-									value={loginPhoneNumber}
-									onChangeText={(value) => {
+								<PhoneNumberRow
+									countryCode={loginCountryCode}
+									onCountryCodeChange={setLoginCountryCode}
+									countrySelectOptions={countrySelectOptions}
+									phoneNumber={loginPhoneNumber}
+									onPhoneNumberChange={(value) => {
 										setLoginPhoneNumber(
 											value
 												.replace(/\D/g, '')
@@ -202,7 +198,6 @@ export function LoginScreen({
 										setLoginOtp('');
 										resetMessage();
 									}}
-									keyboardType="number-pad"
 								/>
 								{loginOtpRequested ? (
 									<Input
@@ -567,6 +562,41 @@ export function LoginScreen({
 				</Card>
 			</YStack>
 		</YStack>
+	);
+}
+
+function PhoneNumberRow({
+	countryCode,
+	onCountryCodeChange,
+	countrySelectOptions,
+	phoneNumber,
+	onPhoneNumberChange
+}: {
+	countryCode: string;
+	onCountryCodeChange: (value: string) => void;
+	countrySelectOptions: Array<{ label: string; value: string }>;
+	phoneNumber: string;
+	onPhoneNumberChange: (value: string) => void;
+}) {
+	return (
+		<XStack gap="$3" flexWrap="wrap" alignItems="flex-start">
+			<YStack width={220} flexShrink={0} $sm={{ width: '100%' }}>
+				<Select
+					value={countryCode}
+					onValueChange={onCountryCodeChange}
+					options={countrySelectOptions}
+					placeholder="Select country"
+				/>
+			</YStack>
+			<YStack flex={1} minWidth={220} $sm={{ width: '100%', flex: 0 }}>
+				<Input
+					placeholder="Mobile number"
+					value={phoneNumber}
+					onChangeText={onPhoneNumberChange}
+					keyboardType="number-pad"
+				/>
+			</YStack>
+		</XStack>
 	);
 }
 

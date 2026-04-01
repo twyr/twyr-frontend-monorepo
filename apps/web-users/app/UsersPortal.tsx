@@ -112,7 +112,16 @@ export function UsersPortal({ view, serverAuthenticated }: Props) {
 				}
 				login={async (phoneNumber, otp) => {
 					await api.login(phoneNumber, otp, state.language);
-					updateProfile({ phoneNumber });
+					updateProfile({
+						contacts: [
+							{
+								typeName: 'mobile',
+								value: phoneNumber,
+								verified: false,
+								isPrimary: true
+							}
+						]
+					});
 					setAuthenticated(true);
 				}}
 				register={(draft) => api.register(draft, state.language)}
@@ -137,10 +146,79 @@ export function UsersPortal({ view, serverAuthenticated }: Props) {
 					profile={state.profile}
 					language={state.language}
 					languageOptions={languageOptions}
+					contactTypesEndpoint="/api/v1/masterdata/contact-types"
 					onLanguageChange={setLanguage}
+					onAddContact={async (contact) => {
+						await api.createProfileContact(
+							{
+								typeId: contact.typeId,
+								value: contact.value,
+								verified: contact.verified,
+								isPrimary: contact.isPrimary
+							},
+							state.language
+						);
+						await syncProfile();
+						return api.fetchProfile(
+							state.profile as PortalProfileInput,
+							state.language
+						);
+					}}
+					onMakePrimaryContact={async (contact) => {
+						await api.updateProfileContact(
+							{
+								id: contact.id,
+								value: contact.value,
+								verified: contact.verified,
+								isPrimary: true
+							},
+							state.language
+						);
+						await syncProfile();
+						return api.fetchProfile(
+							state.profile as PortalProfileInput,
+							state.language
+						);
+					}}
+					onDeleteContact={async (contactId) => {
+						await api.deleteProfileContact(
+							contactId,
+							state.language
+						);
+						await syncProfile();
+						return api.fetchProfile(
+							state.profile as PortalProfileInput,
+							state.language
+						);
+					}}
+					onAddLocale={async (locale) => {
+						await api.createProfileLocale(locale, state.language);
+						await syncProfile();
+						return api.fetchProfile(
+							state.profile as PortalProfileInput,
+							state.language
+						);
+					}}
+					onMakePrimaryLocale={async (locale) => {
+						await api.updateProfileLocale(locale, state.language);
+						await syncProfile();
+						return api.fetchProfile(
+							state.profile as PortalProfileInput,
+							state.language
+						);
+					}}
+					onDeleteLocale={async (localeId) => {
+						await api.deleteProfileLocale(localeId, state.language);
+						await syncProfile();
+						return api.fetchProfile(
+							state.profile as PortalProfileInput,
+							state.language
+						);
+					}}
 					onSave={async (profile) => {
 						await api.updateProfile(
 							profile as PortalProfileInput,
+							state.profile as PortalProfileInput,
 							state.language
 						);
 						updateProfile(profile);

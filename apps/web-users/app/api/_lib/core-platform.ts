@@ -8,7 +8,7 @@ import {
 
 type ProxyOptions = {
 	path: string;
-	method: 'GET' | 'POST' | 'PATCH';
+	method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
 	bodyText?: string;
 	includeNameLocale?: boolean;
 };
@@ -26,7 +26,7 @@ export async function proxyCorePlatformRequest(
 
 	try {
 		const upstreamBody =
-			method === 'GET' || !bodyText
+			method === 'GET' || method === 'DELETE' || !bodyText
 				? undefined
 				: includeNameLocale
 					? withNameLocale(
@@ -43,14 +43,19 @@ export async function proxyCorePlatformRequest(
 			body: upstreamBody,
 			cache: 'no-store'
 		});
-		const responseText = await upstream.text();
-		const response = new NextResponse(responseText, {
-			status: upstream.status,
-			headers: {
-				'Content-Type':
-					upstream.headers.get('content-type') ?? 'application/json'
-			}
-		});
+		const response =
+			upstream.status === 204 || upstream.status === 205
+				? new NextResponse(null, {
+						status: upstream.status
+					})
+				: new NextResponse(await upstream.text(), {
+						status: upstream.status,
+						headers: {
+							'Content-Type':
+								upstream.headers.get('content-type') ??
+								'application/json'
+						}
+					});
 
 		applyProxiedSetCookies(response, upstream.headers);
 

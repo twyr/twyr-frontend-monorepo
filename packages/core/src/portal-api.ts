@@ -14,11 +14,31 @@ export type PortalRegistrationDraft = {
 };
 
 export type PortalProfileInput = {
-	displayName: string;
-	email: string;
-	phoneNumber: string;
-	organization: string;
-	roleTitle: string;
+	id?: string;
+	actorType: PortalActor;
+	genderId: string;
+	names: Array<{
+		id?: string;
+		localeCode: string;
+		firstName: string;
+		middleNames: string;
+		lastName: string;
+		nickname: string;
+	}>;
+	contacts: Array<{
+		id?: string;
+		typeName: string;
+		typeId?: string;
+		value: string;
+		verified: boolean;
+		isPrimary: boolean;
+	}>;
+	locales: Array<{
+		id?: string;
+		localeCode: string;
+		localeId: string;
+		isPrimary: boolean;
+	}>;
 };
 
 export type PortalAction =
@@ -29,7 +49,13 @@ export type PortalAction =
 	| 'validate-session'
 	| 'profile'
 	| 'profile-create'
-	| 'profile-update';
+	| 'profile-update'
+	| 'profile-locale-create'
+	| 'profile-locale-update'
+	| 'profile-locale-delete'
+	| 'profile-contact-create'
+	| 'profile-contact-update'
+	| 'profile-contact-delete';
 
 const PORTAL_SEGMENTS: Record<PortalActor, string> = {
 	users: 'users',
@@ -41,6 +67,21 @@ const PORTAL_ENTITY_TYPES: Record<PortalActor, string> = {
 	system_administrators: 'system_administrator'
 };
 
+const PORTAL_PROFILE_UPDATE_ENTITY_TYPES: Record<PortalActor, string> = {
+	users: 'user',
+	system_administrators: 'system_admin'
+};
+
+const PORTAL_CONTACT_ENTITY_TYPES: Record<PortalActor, string> = {
+	users: 'user_contact',
+	system_administrators: 'system_admin_contact'
+};
+
+const PORTAL_LOCALE_ENTITY_TYPES: Record<PortalActor, string> = {
+	users: 'user_locale',
+	system_administrators: 'system_admin_locale'
+};
+
 const PORTAL_ACTION_PATHS: Record<PortalAction, string> = {
 	'generate-otp': 'session-manager/generate-otp',
 	'validate-otp': 'session-manager/validate-otp',
@@ -49,7 +90,13 @@ const PORTAL_ACTION_PATHS: Record<PortalAction, string> = {
 	'validate-session': 'session-manager/validate-session',
 	profile: 'profile',
 	'profile-create': 'profile/create',
-	'profile-update': 'profile/update'
+	'profile-update': 'profile/update',
+	'profile-locale-create': 'profile/locale/create',
+	'profile-locale-update': 'profile/locale/update',
+	'profile-locale-delete': 'profile/locale/delete',
+	'profile-contact-create': 'profile/contact/create',
+	'profile-contact-update': 'profile/contact/update',
+	'profile-contact-delete': 'profile/contact/delete'
 };
 
 const NAME_ATTRIBUTE_KEYS = [
@@ -114,18 +161,155 @@ export function buildPortalRegistrationPayload(
 
 export function buildPortalProfileUpdatePayload(
 	actor: PortalActor,
-	profile: PortalProfileInput
+	profile: PortalProfileInput,
+	previousProfile?: PortalProfileInput
+) {
+	const primaryLocale =
+		profile.locales.find((locale) => locale.isPrimary) ??
+		profile.locales[0];
+	const primaryName =
+		profile.names.find(
+			(name) =>
+				name.localeCode ===
+				(primaryLocale?.localeCode ?? profile.names[0]?.localeCode)
+		) ?? profile.names[0];
+	const previousPrimaryLocale =
+		previousProfile?.locales.find((locale) => locale.isPrimary) ??
+		previousProfile?.locales[0];
+	const previousPrimaryName =
+		previousProfile?.names.find(
+			(name) =>
+				name.localeCode ===
+				(previousPrimaryLocale?.localeCode ??
+					previousProfile?.names[0]?.localeCode)
+		) ?? previousProfile?.names[0];
+	const attributes: Record<string, string> = {};
+
+	if (
+		!previousPrimaryName ||
+		primaryName?.firstName.trim() !== previousPrimaryName.firstName.trim()
+	) {
+		attributes.first_name = primaryName?.firstName.trim() ?? '';
+	}
+
+	if (
+		!previousPrimaryName ||
+		primaryName?.middleNames.trim() !==
+			previousPrimaryName.middleNames.trim()
+	) {
+		attributes.middle_names = primaryName?.middleNames.trim() ?? '';
+	}
+
+	if (
+		!previousPrimaryName ||
+		primaryName?.lastName.trim() !== previousPrimaryName.lastName.trim()
+	) {
+		attributes.last_name = primaryName?.lastName.trim() ?? '';
+	}
+
+	if (
+		!previousPrimaryName ||
+		primaryName?.nickname.trim() !== previousPrimaryName.nickname.trim()
+	) {
+		attributes.nickname = primaryName?.nickname.trim() ?? '';
+	}
+
+	if (Object.keys(attributes).length > 0) {
+		attributes.locale_id =
+			primaryName?.localeCode ?? primaryLocale?.localeCode ?? '';
+	}
+
+	return {
+		data: {
+			// eslint-disable-next-line security/detect-object-injection
+			type: PORTAL_PROFILE_UPDATE_ENTITY_TYPES[actor],
+			id: profile.id,
+			attributes
+		}
+	};
+}
+
+export function buildPortalProfileContactCreatePayload(
+	actor: PortalActor,
+	contact: {
+		typeId: string;
+		value: string;
+		verified: boolean;
+		isPrimary: boolean;
+	}
 ) {
 	return {
 		data: {
 			// eslint-disable-next-line security/detect-object-injection
-			type: PORTAL_ENTITY_TYPES[actor],
+			type: PORTAL_CONTACT_ENTITY_TYPES[actor],
 			attributes: {
-				display_name: profile.displayName.trim(),
-				email: profile.email.trim(),
-				mobile_no: buildPortalUsername(profile.phoneNumber),
-				organization_name: profile.organization.trim(),
-				role_title: profile.roleTitle.trim()
+				contact_type_id: contact.typeId,
+				contact: contact.value.trim(),
+				verified: contact.verified,
+				is_primary: contact.isPrimary
+			}
+		}
+	};
+}
+
+export function buildPortalProfileContactUpdatePayload(
+	actor: PortalActor,
+	contact: {
+		id: string;
+		value: string;
+		verified: boolean;
+		isPrimary: boolean;
+	}
+) {
+	return {
+		data: {
+			// eslint-disable-next-line security/detect-object-injection
+			type: PORTAL_CONTACT_ENTITY_TYPES[actor],
+			id: contact.id,
+			attributes: {
+				contact: contact.value.trim(),
+				verified: contact.verified,
+				is_primary: contact.isPrimary
+			}
+		}
+	};
+}
+
+export function buildPortalProfileLocaleCreatePayload(
+	actor: PortalActor,
+	locale: {
+		localeId: string;
+		isPrimary: boolean;
+	}
+) {
+	return {
+		data: {
+			// eslint-disable-next-line security/detect-object-injection
+			type: PORTAL_LOCALE_ENTITY_TYPES[actor],
+			attributes: {
+				locale_id: locale.localeId.trim(),
+				is_primary: locale.isPrimary
+			}
+		}
+	};
+}
+
+export function buildPortalProfileLocaleUpdatePayload(
+	actor: PortalActor,
+	locale: {
+		id: string;
+		localeId: string;
+		isPrimary: boolean;
+	}
+) {
+	return {
+		data: {
+			// eslint-disable-next-line security/detect-object-injection
+			type: PORTAL_LOCALE_ENTITY_TYPES[actor],
+			id: locale.id,
+			attributes: {
+				locale_id: locale.localeId.trim(),
+				is_primary: locale.isPrimary
 			}
 		}
 	};
@@ -250,6 +434,80 @@ function getAttributes(payload: unknown): Record<string, unknown> {
 	return typedPayload.attributes ?? {};
 }
 
+function getPrimaryData(payload: unknown): Record<string, unknown> | null {
+	if (typeof payload !== 'object' || payload === null) {
+		return null;
+	}
+
+	const typedPayload = payload as {
+		data?: { id?: unknown; type?: unknown; attributes?: unknown };
+	};
+
+	if (
+		typeof typedPayload.data === 'object' &&
+		typedPayload.data !== null &&
+		!Array.isArray(typedPayload.data)
+	) {
+		return typedPayload.data as Record<string, unknown>;
+	}
+
+	return null;
+}
+
+function getIncludedResources(
+	payload: unknown
+): Array<Record<string, unknown>> {
+	if (typeof payload !== 'object' || payload === null) {
+		return [];
+	}
+
+	return Array.isArray((payload as { included?: unknown[] }).included)
+		? ((payload as { included: unknown[] }).included.filter(
+				(entry): entry is Record<string, unknown> =>
+					typeof entry === 'object' && entry !== null
+			) as Array<Record<string, unknown>>)
+		: [];
+}
+
+function getResourceKey(type: unknown, id: unknown): string {
+	return `${asString(type)}:${asString(id)}`;
+}
+
+function getRelationshipEntries(
+	resource: Record<string, unknown> | null,
+	name: string
+): Array<Record<string, unknown>> {
+	const relationships =
+		resource &&
+		typeof resource.relationships === 'object' &&
+		resource.relationships !== null
+			? (resource.relationships as Record<string, unknown>)
+			: null;
+	const relationship =
+		relationships &&
+		// eslint-disable-next-line security/detect-object-injection
+		typeof relationships[name] === 'object' &&
+		// eslint-disable-next-line security/detect-object-injection
+		relationships[name] !== null
+			? // eslint-disable-next-line security/detect-object-injection
+				(relationships[name] as Record<string, unknown>)
+			: null;
+	const data = relationship?.data;
+
+	if (Array.isArray(data)) {
+		return data.filter(
+			(entry): entry is Record<string, unknown> =>
+				typeof entry === 'object' && entry !== null
+		);
+	}
+
+	if (typeof data === 'object' && data !== null) {
+		return [data as Record<string, unknown>];
+	}
+
+	return [];
+}
+
 function asString(value: unknown): string {
 	return typeof value === 'string' ? value.trim() : '';
 }
@@ -263,33 +521,202 @@ export function mapPortalProfilePayload(
 	payload: unknown,
 	fallback: PortalProfileInput
 ): PortalProfileInput {
+	const primaryData = getPrimaryData(payload);
 	const attributes = getAttributes(payload);
-	const firstName = asString(attributes.first_name);
-	const middleNames = asString(attributes.middle_names);
-	const lastName = asString(attributes.last_name);
-	const displayName =
-		asString(attributes.display_name) ||
-		[firstName, middleNames, lastName].filter(Boolean).join(' ') ||
-		fallback.displayName;
+	const includedResources = getIncludedResources(payload);
+	const includedByKey = new Map<string, Record<string, unknown>>();
+
+	for (const resource of includedResources) {
+		includedByKey.set(getResourceKey(resource.type, resource.id), resource);
+	}
+
+	const contactResources = getRelationshipEntries(primaryData, 'contacts')
+		.map((entry) => includedByKey.get(getResourceKey(entry.type, entry.id)))
+		.filter(Boolean) as Array<Record<string, unknown>>;
+	const localeResources = getRelationshipEntries(primaryData, 'locales')
+		.map((entry) => includedByKey.get(getResourceKey(entry.type, entry.id)))
+		.filter(Boolean) as Array<Record<string, unknown>>;
+	const nameResources = getRelationshipEntries(primaryData, 'names')
+		.map((entry) => includedByKey.get(getResourceKey(entry.type, entry.id)))
+		.filter(Boolean) as Array<Record<string, unknown>>;
+
+	const contacts =
+		contactResources.length > 0
+			? contactResources.map((resource) => {
+					const resourceAttributes =
+						typeof resource.attributes === 'object' &&
+						resource.attributes !== null
+							? (resource.attributes as Record<string, unknown>)
+							: {};
+					const contactTypeRelationship =
+						getRelationshipEntries(resource, 'contactType')[0] ??
+						null;
+					const contactType =
+						(contactTypeRelationship &&
+							includedByKey.get(
+								getResourceKey(
+									contactTypeRelationship.type,
+									contactTypeRelationship.id
+								)
+							)) ??
+						null;
+					const contactTypeAttributes =
+						contactType &&
+						typeof contactType.attributes === 'object' &&
+						contactType.attributes !== null
+							? (contactType.attributes as Record<
+									string,
+									unknown
+								>)
+							: {};
+
+					return {
+						id: asString(resource.id) || undefined,
+						typeName:
+							asString(contactTypeAttributes.name) ||
+							asString(resourceAttributes.contact_type_name) ||
+							'other',
+						typeId:
+							asString(resourceAttributes.contact_type_id) ||
+							asString(contactType?.id) ||
+							undefined,
+						value:
+							asString(resourceAttributes.contact) ||
+							asString(resourceAttributes.value),
+						verified: resourceAttributes.verified === true,
+						isPrimary: resourceAttributes.is_primary === true
+					};
+				})
+			: fallback.contacts;
+
+	const locales =
+		localeResources.length > 0
+			? localeResources.map((resource) => {
+					const resourceAttributes =
+						typeof resource.attributes === 'object' &&
+						resource.attributes !== null
+							? (resource.attributes as Record<string, unknown>)
+							: {};
+
+					return {
+						id: asString(resource.id) || undefined,
+						localeCode:
+							asString(resourceAttributes.locale_code) ||
+							asString(resourceAttributes.locale_id),
+						localeId:
+							asString(resourceAttributes.locale_id) ||
+							asString(resourceAttributes.locale_code),
+						isPrimary: resourceAttributes.is_primary === true
+					};
+				})
+			: fallback.locales;
+
+	const names =
+		nameResources.length > 0
+			? nameResources.map((resource) => {
+					const resourceAttributes =
+						typeof resource.attributes === 'object' &&
+						resource.attributes !== null
+							? (resource.attributes as Record<string, unknown>)
+							: {};
+
+					return {
+						id: asString(resource.id) || undefined,
+						localeCode:
+							asString(resourceAttributes.locale_code) ||
+							asString(resourceAttributes.locale_id) ||
+							fallback.names[0]?.localeCode ||
+							fallback.locales[0]?.localeCode ||
+							'',
+						firstName: asString(resourceAttributes.first_name),
+						middleNames: asString(resourceAttributes.middle_names),
+						lastName: asString(resourceAttributes.last_name),
+						nickname: asString(resourceAttributes.nickname)
+					};
+				})
+			: [
+					{
+						id: undefined,
+						localeCode:
+							asString(attributes.locale_id) ||
+							fallback.names[0]?.localeCode ||
+							fallback.locales[0]?.localeCode ||
+							'',
+						firstName: asString(attributes.first_name),
+						middleNames: asString(attributes.middle_names),
+						lastName: asString(attributes.last_name),
+						nickname: asString(attributes.nickname)
+					}
+				].filter(
+					(name) =>
+						name.firstName.length > 0 ||
+						name.middleNames.length > 0 ||
+						name.lastName.length > 0 ||
+						name.nickname.length > 0
+				);
+
+	const fallbackMobile =
+		normalizePhoneNumber(attributes.mobile_no) ||
+		fallback.contacts.find((contact) => contact.typeName === 'mobile')
+			?.value ||
+		'';
+	const fallbackEmail =
+		asString(attributes.email) ||
+		asString(attributes.email_address) ||
+		fallback.contacts.find((contact) => contact.typeName === 'email')
+			?.value ||
+		'';
+
+	const normalizedContacts =
+		contacts.length > 0
+			? contacts
+			: [
+					...(fallbackMobile
+						? [
+								{
+									typeName: 'mobile',
+									value: fallbackMobile,
+									verified: false,
+									isPrimary: true
+								}
+							]
+						: []),
+					...(fallbackEmail
+						? [
+								{
+									typeName: 'email',
+									value: fallbackEmail,
+									verified: false,
+									isPrimary: !fallbackMobile
+								}
+							]
+						: [])
+				];
 
 	return {
-		displayName,
-		email:
-			asString(attributes.email) ||
-			asString(attributes.email_address) ||
-			fallback.email,
-		phoneNumber:
-			normalizePhoneNumber(attributes.mobile_no) || fallback.phoneNumber,
-		organization:
-			asString(attributes.organization_name) ||
-			asString(attributes.organization) ||
-			fallback.organization,
-		roleTitle:
-			asString(attributes.role_title) ||
-			asString(attributes.role) ||
-			asString(attributes.sub_role_name) ||
-			fallback.roleTitle
+		id: asString(primaryData?.id) || fallback.id,
+		actorType:
+			actorFromEntityType(
+				asString(primaryData?.type) ||
+					asString((attributes as { type?: unknown }).type)
+			) ?? fallback.actorType,
+		genderId: asString(attributes.gender_id) || fallback.genderId,
+		names: names.length > 0 ? names : fallback.names,
+		contacts: normalizedContacts,
+		locales: locales.length > 0 ? locales : fallback.locales
 	};
+}
+
+function actorFromEntityType(type: string): PortalActor | null {
+	if (type === 'user') {
+		return 'users';
+	}
+
+	if (type === 'system_administrator') {
+		return 'system_administrators';
+	}
+
+	return null;
 }
 
 type PortalApiClientOptions = {
@@ -315,10 +742,11 @@ export function createPortalApiClient({
 	const request = async (
 		action: PortalAction,
 		init: RequestInit,
-		locale?: AppLanguageCode
+		locale?: AppLanguageCode,
+		pathOverride?: string
 	) => {
 		const response = await fetch(
-			buildUrl(getPortalApiPath(actor, action), locale),
+			buildUrl(pathOverride ?? getPortalApiPath(actor, action), locale),
 			{
 				cache: 'no-store',
 				credentials: 'include',
@@ -346,7 +774,22 @@ export function createPortalApiClient({
 			);
 			await ensureSuccess(response, 'Unable to generate OTP.');
 
-			return (await response.text()).trim();
+			const responseText = (await response.text()).trim();
+			if (!responseText) {
+				return '';
+			}
+
+			try {
+				const payload = JSON.parse(responseText) as {
+					message?: unknown;
+				};
+
+				return typeof payload.message === 'string'
+					? payload.message.trim()
+					: responseText;
+			} catch {
+				return responseText;
+			}
 		},
 		validateOtp: async (
 			phoneNumber: string,
@@ -455,6 +898,7 @@ export function createPortalApiClient({
 		},
 		updateProfile: async (
 			profile: PortalProfileInput,
+			previousProfile?: PortalProfileInput,
 			locale?: AppLanguageCode
 		) => {
 			const response = await request(
@@ -465,12 +909,177 @@ export function createPortalApiClient({
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify(
-						buildPortalProfileUpdatePayload(actor, profile)
+						buildPortalProfileUpdatePayload(
+							actor,
+							profile,
+							previousProfile
+						)
 					)
 				},
 				locale
 			);
 			await ensureSuccess(response, 'Unable to update the profile.');
+		},
+		createProfileLocale: async (
+			localePayload: {
+				localeId: string;
+				isPrimary: boolean;
+			},
+			locale?: AppLanguageCode
+		) => {
+			const response = await request(
+				'profile-locale-create',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(
+						buildPortalProfileLocaleCreatePayload(
+							actor,
+							localePayload
+						)
+					)
+				},
+				locale
+			);
+			await ensureSuccess(
+				response,
+				'Unable to create the profile locale.'
+			);
+
+			return (await response.text()).trim();
+		},
+		updateProfileLocale: async (
+			localePayload: {
+				id: string;
+				localeId: string;
+				isPrimary: boolean;
+			},
+			locale?: AppLanguageCode
+		) => {
+			const response = await request(
+				'profile-locale-update',
+				{
+					method: 'PATCH',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(
+						buildPortalProfileLocaleUpdatePayload(
+							actor,
+							localePayload
+						)
+					)
+				},
+				locale
+			);
+			await ensureSuccess(
+				response,
+				'Unable to update the profile locale.'
+			);
+
+			return (await response.text()).trim();
+		},
+		deleteProfileLocale: async (
+			localeId: string,
+			locale?: AppLanguageCode
+		) => {
+			const response = await request(
+				'profile-locale-delete',
+				{
+					method: 'DELETE'
+				},
+				locale,
+				`${getPortalApiPath(actor, 'profile-locale-delete')}/${localeId}`
+			);
+			if (response.status === 204) {
+				return;
+			}
+
+			throw new Error(
+				(await readApiErrorMessage(response)) ??
+					'Unable to delete the profile locale.'
+			);
+		},
+		createProfileContact: async (
+			contact: {
+				typeId: string;
+				value: string;
+				verified: boolean;
+				isPrimary: boolean;
+			},
+			locale?: AppLanguageCode
+		) => {
+			const response = await request(
+				'profile-contact-create',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(
+						buildPortalProfileContactCreatePayload(actor, contact)
+					)
+				},
+				locale
+			);
+			await ensureSuccess(
+				response,
+				'Unable to create the profile contact.'
+			);
+
+			return (await response.text()).trim();
+		},
+		updateProfileContact: async (
+			contact: {
+				id: string;
+				value: string;
+				verified: boolean;
+				isPrimary: boolean;
+			},
+			locale?: AppLanguageCode
+		) => {
+			const response = await request(
+				'profile-contact-update',
+				{
+					method: 'PATCH',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(
+						buildPortalProfileContactUpdatePayload(actor, contact)
+					)
+				},
+				locale
+			);
+			await ensureSuccess(
+				response,
+				'Unable to update the profile contact.'
+			);
+
+			return (await response.text()).trim();
+		},
+		deleteProfileContact: async (
+			contactId: string,
+			locale?: AppLanguageCode
+		) => {
+			const response = await request(
+				'profile-contact-delete',
+				{
+					method: 'DELETE'
+				},
+				locale,
+				`${getPortalApiPath(actor, 'profile-contact-delete')}/${contactId}`
+			);
+			if (response.status === 204) {
+				return;
+			}
+
+			throw new Error(
+				(await readApiErrorMessage(response)) ??
+					'Unable to delete the profile contact.'
+			);
 		}
 	};
 }

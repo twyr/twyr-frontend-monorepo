@@ -15,11 +15,31 @@ export type ExperienceLanguageOption = {
 };
 
 export type ExperienceProfile = {
-	displayName: string;
-	email: string;
-	phoneNumber: string;
-	organization: string;
-	roleTitle: string;
+	id?: string;
+	actorType: ExperienceActor;
+	genderId: string;
+	names: Array<{
+		id?: string;
+		localeCode: string;
+		firstName: string;
+		middleNames: string;
+		lastName: string;
+		nickname: string;
+	}>;
+	contacts: Array<{
+		id?: string;
+		typeName: string;
+		typeId?: string;
+		value: string;
+		verified: boolean;
+		isPrimary: boolean;
+	}>;
+	locales: Array<{
+		id?: string;
+		localeCode: string;
+		localeId: string;
+		isPrimary: boolean;
+	}>;
 };
 
 export type ExperienceActorState = {
@@ -83,22 +103,30 @@ export function normalizeExperienceLanguageOptions(
 }
 
 function defaultProfile(actor: ExperienceActor): ExperienceProfile {
-	if (actor === 'system_administrators') {
-		return {
-			displayName: 'System Administrator',
-			email: 'administrator@twyr.in',
-			phoneNumber: '',
-			organization: 'Twyr Operations',
-			roleTitle: 'Platform Administrator'
-		};
-	}
-
 	return {
-		displayName: 'Twyr User',
-		email: 'user@twyr.in',
-		phoneNumber: '',
-		organization: 'Twyr',
-		roleTitle: 'Platform User'
+		actorType: actor,
+		genderId: '',
+		names: [
+			{
+				localeCode: DEFAULT_APP_LANGUAGE,
+				firstName:
+					actor === 'system_administrators' ? 'System' : 'Twyr',
+				middleNames: '',
+				lastName:
+					actor === 'system_administrators'
+						? 'Administrator'
+						: 'User',
+				nickname: ''
+			}
+		],
+		contacts: [],
+		locales: [
+			{
+				localeCode: DEFAULT_APP_LANGUAGE,
+				localeId: DEFAULT_APP_LANGUAGE,
+				isPrimary: true
+			}
+		]
 	};
 }
 
@@ -201,30 +229,125 @@ function normalizeProfile(
 		return fallback;
 	}
 
-	const typedPayload = payload as Partial<ExperienceProfile>;
+	const typedPayload = payload as Partial<ExperienceProfile> & {
+		displayName?: string;
+		email?: string;
+		phoneNumber?: string;
+	};
+	const derivedName =
+		typeof typedPayload.displayName === 'string' &&
+		typedPayload.displayName.trim().length > 0
+			? typedPayload.displayName.trim().split(/\s+/)
+			: [];
+
+	const names =
+		Array.isArray(typedPayload.names) && typedPayload.names.length > 0
+			? typedPayload.names.map((name) => ({
+					id: typeof name.id === 'string' ? name.id : undefined,
+					localeCode:
+						typeof name.localeCode === 'string' &&
+						name.localeCode.trim().length > 0
+							? name.localeCode
+							: DEFAULT_APP_LANGUAGE,
+					firstName:
+						typeof name.firstName === 'string'
+							? name.firstName
+							: '',
+					middleNames:
+						typeof name.middleNames === 'string'
+							? name.middleNames
+							: '',
+					lastName:
+						typeof name.lastName === 'string' ? name.lastName : '',
+					nickname:
+						typeof name.nickname === 'string' ? name.nickname : ''
+				}))
+			: [
+					{
+						localeCode: DEFAULT_APP_LANGUAGE,
+						firstName:
+							derivedName[0] ?? fallback.names[0].firstName,
+						middleNames:
+							derivedName.length > 2
+								? derivedName.slice(1, -1).join(' ')
+								: '',
+						lastName:
+							derivedName.length > 1
+								? derivedName[derivedName.length - 1]
+								: fallback.names[0].lastName,
+						nickname: ''
+					}
+				];
+	const contacts =
+		Array.isArray(typedPayload.contacts) && typedPayload.contacts.length > 0
+			? typedPayload.contacts.map((contact) => ({
+					id: typeof contact.id === 'string' ? contact.id : undefined,
+					typeName:
+						typeof contact.typeName === 'string'
+							? contact.typeName
+							: 'other',
+					typeId:
+						typeof contact.typeId === 'string'
+							? contact.typeId
+							: undefined,
+					value:
+						typeof contact.value === 'string' ? contact.value : '',
+					verified: contact.verified === true,
+					isPrimary: contact.isPrimary === true
+				}))
+			: [
+					...(typeof typedPayload.phoneNumber === 'string' &&
+					typedPayload.phoneNumber.length > 0
+						? [
+								{
+									typeName: 'mobile',
+									value: typedPayload.phoneNumber,
+									verified: false,
+									isPrimary: true
+								}
+							]
+						: []),
+					...(typeof typedPayload.email === 'string' &&
+					typedPayload.email.length > 0
+						? [
+								{
+									typeName: 'email',
+									value: typedPayload.email,
+									verified: false,
+									isPrimary:
+										typeof typedPayload.phoneNumber !==
+											'string' ||
+										typedPayload.phoneNumber.length === 0
+								}
+							]
+						: [])
+				];
+	const locales =
+		Array.isArray(typedPayload.locales) && typedPayload.locales.length > 0
+			? typedPayload.locales.map((locale) => ({
+					id: typeof locale.id === 'string' ? locale.id : undefined,
+					localeCode:
+						typeof locale.localeCode === 'string'
+							? locale.localeCode
+							: DEFAULT_APP_LANGUAGE,
+					localeId:
+						typeof locale.localeId === 'string'
+							? locale.localeId
+							: DEFAULT_APP_LANGUAGE,
+					isPrimary: locale.isPrimary === true
+				}))
+			: fallback.locales;
 
 	return {
-		displayName:
-			typeof typedPayload.displayName === 'string' &&
-			typedPayload.displayName.trim().length > 0
-				? typedPayload.displayName
-				: fallback.displayName,
-		email:
-			typeof typedPayload.email === 'string'
-				? typedPayload.email
-				: fallback.email,
-		phoneNumber:
-			typeof typedPayload.phoneNumber === 'string'
-				? typedPayload.phoneNumber
-				: fallback.phoneNumber,
-		organization:
-			typeof typedPayload.organization === 'string'
-				? typedPayload.organization
-				: fallback.organization,
-		roleTitle:
-			typeof typedPayload.roleTitle === 'string'
-				? typedPayload.roleTitle
-				: fallback.roleTitle
+		id: typeof typedPayload.id === 'string' ? typedPayload.id : undefined,
+		actorType: actor,
+		genderId:
+			typeof typedPayload.genderId === 'string'
+				? typedPayload.genderId
+				: '',
+		names,
+		contacts,
+		locales
 	};
 }
 
@@ -277,7 +400,17 @@ export function completeLogin(
 			pendingOtp: null,
 			profile: {
 				...actorState.profile,
-				phoneNumber: normalizedPhoneNumber
+				contacts: [
+					{
+						typeName: 'mobile',
+						value: normalizedPhoneNumber,
+						verified: false,
+						isPrimary: true
+					},
+					...actorState.profile.contacts.filter(
+						(contact) => contact.typeName !== 'mobile'
+					)
+				]
 			}
 		}
 	};
@@ -304,25 +437,39 @@ export function registerProfile(
 		);
 	}
 
-	const displayName = [
-		draft.firstName.trim(),
-		draft.middleNames.trim(),
-		draft.lastName.trim()
-	]
-		.filter(Boolean)
-		.join(' ');
-
 	return {
 		...state,
 		[actor]: {
 			...actorState,
 			pendingOtp: null,
 			profile: {
-				displayName: displayName || actorState.profile.displayName,
-				email: draft.email.trim(),
-				phoneNumber: normalizedPhoneNumber,
-				organization: draft.organization.trim(),
-				roleTitle: draft.roleTitle.trim()
+				...actorState.profile,
+				names: [
+					{
+						localeCode:
+							actorState.profile.locales.find(
+								(locale) => locale.isPrimary
+							)?.localeCode ?? DEFAULT_APP_LANGUAGE,
+						firstName: draft.firstName.trim(),
+						middleNames: draft.middleNames.trim(),
+						lastName: draft.lastName.trim(),
+						nickname: ''
+					}
+				],
+				contacts: [
+					{
+						typeName: 'mobile',
+						value: normalizedPhoneNumber,
+						verified: false,
+						isPrimary: true
+					},
+					{
+						typeName: 'email',
+						value: draft.email.trim(),
+						verified: false,
+						isPrimary: false
+					}
+				]
 			}
 		}
 	};
@@ -360,16 +507,9 @@ export function updateActorProfile(
 	};
 
 	if (
+		JSON.stringify(nextProfile) ===
 		// eslint-disable-next-line security/detect-object-injection
-		nextProfile.displayName === state[actor].profile.displayName &&
-		// eslint-disable-next-line security/detect-object-injection
-		nextProfile.email === state[actor].profile.email &&
-		// eslint-disable-next-line security/detect-object-injection
-		nextProfile.phoneNumber === state[actor].profile.phoneNumber &&
-		// eslint-disable-next-line security/detect-object-injection
-		nextProfile.organization === state[actor].profile.organization &&
-		// eslint-disable-next-line security/detect-object-injection
-		nextProfile.roleTitle === state[actor].profile.roleTitle
+		JSON.stringify(state[actor].profile)
 	) {
 		return state;
 	}
