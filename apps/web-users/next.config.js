@@ -13,6 +13,7 @@ const nextConfig = {
 		'@twyr/app-providers',
 		'@twyr/app-shells',
 		'@twyr/design-system',
+		'@twyr/i18n',
 		'@twyr/ui-kit',
 		'@twyr/ui-composed'
 	],

@@ -4,6 +4,7 @@ export const profileSchema = z.object({
 	actorType: z.string().min(1),
 	id: z.string().min(1).optional(),
 	genderId: z.string().optional().default(''),
+	dateOfBirth: z.string().optional().default(''),
 	names: z.array(
 		z.object({
 			id: z.string().min(1).optional(),

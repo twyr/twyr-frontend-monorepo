@@ -31,10 +31,15 @@ export function Select({
 		<TamaguiSelect value={value} onValueChange={onValueChange}>
 			<TamaguiSelect.Trigger
 				width={width}
+				backgroundColor="$backgroundSoft"
+				borderColor="$borderColor"
+				borderRadius="$4"
 				minHeight={controlHeights.default}
 				paddingHorizontal={controlPadding.horizontal}
 				paddingVertical={controlPadding.vertical}
+				fontSize="$3"
 				iconAfter={ChevronDownIcon}
+				focusStyle={{ borderColor: '$primary' }}
 				accessibilityLabel={accessibilityLabel}
 			>
 				<XStack gap="$2" alignItems="center" justifyContent="center">

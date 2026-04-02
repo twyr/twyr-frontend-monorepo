@@ -12,11 +12,13 @@ import {
 import { ToastProvider } from '@tamagui/toast';
 import { TamaguiProvider, Theme } from 'tamagui';
 import {
+	AUTH_SERVER_LOCALE_COOKIE_NAME,
 	fetchLocaleOptions,
 	normalizeAppLanguage,
 	type AppLanguageCode
 } from '@twyr/core';
 import { tamaguiConfig } from '@twyr/design-system';
+import { TwyrI18nProvider, setTwyrLocale } from '@twyr/i18n';
 import { type ThemeMode } from '@twyr/ui-kit';
 import {
 	completeLogin,
@@ -33,6 +35,7 @@ import {
 	updateActorProfile,
 	updateActorSidebar,
 	setActorAuthenticated,
+	setActorSkipNextProfileFetch,
 	setActorSessionResolved,
 	normalizeExperienceLanguageOptions,
 	normalizeExperienceState,
@@ -75,9 +78,24 @@ type WebPortalContextValue = {
 		actor: ExperienceActor,
 		sessionResolved: boolean
 	) => void;
+	setSkipNextProfileFetch: (
+		actor: ExperienceActor,
+		skipNextProfileFetch: boolean
+	) => void;
 };
 
 const WebPortalContext = createContext<WebPortalContextValue | null>(null);
+
+function syncWebLanguage(language: AppLanguageCode) {
+	void setTwyrLocale(language);
+
+	if (typeof document === 'undefined') {
+		return;
+	}
+
+	document.documentElement.lang = language;
+	document.cookie = `${AUTH_SERVER_LOCALE_COOKIE_NAME}=${encodeURIComponent(language)}; path=/; SameSite=Lax`;
+}
 
 function readStoredThemeMode(): ThemeMode {
 	if (typeof window === 'undefined') {
@@ -138,7 +156,9 @@ export function useWebPortalExperience(actor: ExperienceActor) {
 			setAuthenticated: (authenticated: boolean) =>
 				value.setAuthenticated(actor, authenticated),
 			setSessionResolved: (sessionResolved: boolean) =>
-				value.setSessionResolved(actor, sessionResolved)
+				value.setSessionResolved(actor, sessionResolved),
+			setSkipNextProfileFetch: (skipNextProfileFetch: boolean) =>
+				value.setSkipNextProfileFetch(actor, skipNextProfileFetch)
 		}),
 		[actor, value]
 	);
@@ -177,13 +197,13 @@ export function TwyrWebProviders({
 			);
 			if (storedExperienceState) {
 				try {
-					setExperienceState(
-						resetStoredSessionResolution(
-							normalizeExperienceState(
-								JSON.parse(storedExperienceState)
-							)
+					const nextState = resetStoredSessionResolution(
+						normalizeExperienceState(
+							JSON.parse(storedExperienceState)
 						)
 					);
+					syncWebLanguage(nextState[languageActor].language);
+					setExperienceState(nextState);
 				} catch {
 					setExperienceState(createDefaultExperienceState());
 				}
@@ -227,6 +247,15 @@ export function TwyrWebProviders({
 			JSON.stringify(experienceState)
 		);
 	}, [experienceState]);
+
+	useEffect(() => {
+		// eslint-disable-next-line security/detect-object-injection
+		syncWebLanguage(experienceState[languageActor].language);
+	}, [
+		// eslint-disable-next-line security/detect-object-injection
+		experienceState[languageActor].language,
+		languageActor
+	]);
 
 	useEffect(() => {
 		if (!languageOptionsEndpoint) {
@@ -304,8 +333,10 @@ export function TwyrWebProviders({
 
 	const setLanguage = useCallback(
 		(actor: ExperienceActor, language: AppLanguageCode) => {
+			const normalizedLanguage = normalizeAppLanguage(language);
+			syncWebLanguage(normalizedLanguage);
 			setExperienceState((currentState) =>
-				updateActorLanguage(currentState, actor, language)
+				updateActorLanguage(currentState, actor, normalizedLanguage)
 			);
 		},
 		[]
@@ -347,6 +378,19 @@ export function TwyrWebProviders({
 		[]
 	);
 
+	const setSkipNextProfileFetch = useCallback(
+		(actor: ExperienceActor, skipNextProfileFetch: boolean) => {
+			setExperienceState((currentState) =>
+				setActorSkipNextProfileFetch(
+					currentState,
+					actor,
+					skipNextProfileFetch
+				)
+			);
+		},
+		[]
+	);
+
 	const portalContextValue = useMemo<WebPortalContextValue>(
 		() => ({
 			state: experienceState,
@@ -359,7 +403,8 @@ export function TwyrWebProviders({
 			setSidebarCollapsed,
 			updateProfile,
 			setAuthenticated,
-			setSessionResolved
+			setSessionResolved,
+			setSkipNextProfileFetch
 		}),
 		[
 			experienceState,
@@ -371,25 +416,33 @@ export function TwyrWebProviders({
 			setAuthenticated,
 			setLanguage,
 			setSessionResolved,
+			setSkipNextProfileFetch,
 			setSidebarCollapsed,
 			updateProfile
 		]
 	);
 
 	return (
-		<WebThemeContext.Provider
-			value={{ themeMode, setThemeMode, resolvedTheme }}
+		<TwyrI18nProvider
+			locale={
+				// eslint-disable-next-line security/detect-object-injection
+				experienceState[languageActor].language
+			}
 		>
-			<WebPortalContext.Provider value={portalContextValue}>
-				<TamaguiProvider
-					config={tamaguiConfig}
-					defaultTheme={resolvedTheme}
-				>
-					<Theme name={resolvedTheme}>
-						<ToastProvider>{children}</ToastProvider>
-					</Theme>
-				</TamaguiProvider>
-			</WebPortalContext.Provider>
-		</WebThemeContext.Provider>
+			<WebThemeContext.Provider
+				value={{ themeMode, setThemeMode, resolvedTheme }}
+			>
+				<WebPortalContext.Provider value={portalContextValue}>
+					<TamaguiProvider
+						config={tamaguiConfig}
+						defaultTheme={resolvedTheme}
+					>
+						<Theme name={resolvedTheme}>
+							<ToastProvider>{children}</ToastProvider>
+						</Theme>
+					</TamaguiProvider>
+				</WebPortalContext.Provider>
+			</WebThemeContext.Provider>
+		</TwyrI18nProvider>
 	);
 }

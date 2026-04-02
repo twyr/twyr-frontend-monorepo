@@ -1,11 +1,8 @@
 import { IconLayoutDashboard } from '@tabler/icons-react';
 
 import type { AppIconProps } from './types';
+import { useWebIconProps } from './web';
 
-export function LayoutDashboardIcon({
-	color = 'currentColor',
-	size = 24,
-	stroke = 2
-}: AppIconProps) {
-	return <IconLayoutDashboard color={color} size={size} stroke={stroke} />;
+export function LayoutDashboardIcon(props: AppIconProps) {
+	return <IconLayoutDashboard {...useWebIconProps(props)} />;
 }

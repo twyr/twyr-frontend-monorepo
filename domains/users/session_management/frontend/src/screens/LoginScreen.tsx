@@ -1,5 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
-import { fetchCountryCodeOptions, type AppLanguageCode } from '@twyr/core';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import {
+	fetchCountryCodeOptions,
+	fetchGenderOptions,
+	formatCountryCodeOptionLabel,
+	getDefaultCountryCodeValue,
+	parseDateOnlyValue,
+	type CountryCodeOption,
+	type AppLanguageCode,
+	type PortalRegistrationDraft
+} from '@twyr/core';
+import { useLocalizedPageRequests } from '@twyr/app-providers/src/page-requests';
+import { useTwyrTranslation } from '@twyr/i18n';
+import { DatePicker } from '@twyr/ui-composed';
 import { Button, Card, Input, Select } from '@twyr/ui-kit';
 import { Text, XStack, YStack } from 'tamagui';
 
@@ -8,27 +20,18 @@ type LanguageOption = {
 	label: string;
 };
 
-type RegistrationDraft = {
-	phoneNumber: string;
-	otp: string;
-	firstName: string;
-	middleNames: string;
-	lastName: string;
-	email: string;
-	organization: string;
-	roleTitle: string;
-};
-
 type Props = {
 	selectedLanguage: AppLanguageCode;
 	languageOptions: LanguageOption[];
 	countryOptionsEndpoint: string;
+	gendersEndpoint: string;
 	requestOtp: (phoneNumber: string) => Promise<string>;
 	validateOtp: (phoneNumber: string, otp: string) => Promise<void>;
 	login: (phoneNumber: string, otp: string) => Promise<void>;
-	register: (draft: RegistrationDraft) => Promise<void>;
+	register: (draft: PortalRegistrationDraft) => Promise<void>;
 	onLanguageChange: (language: AppLanguageCode) => void;
 	onLoginSuccess?: () => void;
+	headerLogo?: ReactNode;
 };
 
 type MessageTone = 'error' | 'success';
@@ -39,13 +42,18 @@ export function LoginScreen({
 	selectedLanguage,
 	languageOptions,
 	countryOptionsEndpoint,
+	gendersEndpoint,
 	requestOtp,
 	validateOtp,
 	login,
 	register,
 	onLanguageChange,
-	onLoginSuccess
+	onLoginSuccess,
+	headerLogo
 }: Props) {
+	const { t } = useTwyrTranslation();
+	const { runRequest, unregisterRequest } =
+		useLocalizedPageRequests(selectedLanguage);
 	const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 	const [loginPhoneNumber, setLoginPhoneNumber] = useState('');
 	const [loginOtp, setLoginOtp] = useState('');
@@ -53,6 +61,9 @@ export function LoginScreen({
 	const [countryOptions, setCountryOptions] = useState<CountryCodeOption[]>(
 		[]
 	);
+	const [genderOptions, setGenderOptions] = useState<
+		Array<{ id: string; label: string }>
+	>([]);
 	const [loginCountryCode, setLoginCountryCode] = useState('IN');
 	const [registrationStep, setRegistrationStep] = useState<1 | 2 | 3 | 4>(1);
 	const [registrationPhoneNumber, setRegistrationPhoneNumber] = useState('');
@@ -64,9 +75,9 @@ export function LoginScreen({
 	const [firstName, setFirstName] = useState('');
 	const [middleNames, setMiddleNames] = useState('');
 	const [lastName, setLastName] = useState('');
-	const [email, setEmail] = useState('');
-	const [organization, setOrganization] = useState('');
-	const [roleTitle, setRoleTitle] = useState('');
+	const [nickname, setNickname] = useState('');
+	const [genderId, setGenderId] = useState('');
+	const [dateOfBirth, setDateOfBirth] = useState('');
 	const [message, setMessage] = useState<{
 		tone: MessageTone;
 		text: string;
@@ -89,87 +100,118 @@ export function LoginScreen({
 	const registrationPhoneDisabled = registrationPhoneNumber.length !== 10;
 	const registrationOtpDisabled = registrationOtp.length !== 4;
 	const registrationIdentityDisabled =
-		firstName.trim().length === 0 || email.trim().length === 0;
-	const registrationWorkspaceDisabled =
-		organization.trim().length === 0 || roleTitle.trim().length === 0;
+		firstName.trim().length === 0 || lastName.trim().length === 0;
+	const registrationDemographicsDisabled =
+		genderId.trim().length === 0 || dateOfBirth.trim().length === 0;
 	const countrySelectOptions = useMemo(
 		() =>
 			countryOptions.map((option) => ({
-				label: `${option.country_name} (${option.iso_code})`,
+				label: formatCountryCodeOptionLabel(option),
 				value: option.iso_code
 			})),
 		[countryOptions]
 	);
+	const genderSelectOptions = useMemo(
+		() =>
+			genderOptions.map((option) => ({
+				label: option.label,
+				value: option.id
+			})),
+		[genderOptions]
+	);
+	const selectedGenderLabel =
+		genderOptions.find((option) => option.id === genderId)?.label ?? '';
 
 	useEffect(() => {
 		let cancelled = false;
-
-		const loadCountryCodes = async () => {
+		void runRequest('country-codes', async (locale) => {
 			const options = await fetchCountryCodeOptions(
 				countryOptionsEndpoint,
-				selectedLanguage
+				locale
 			);
 			if (cancelled || options.length === 0) {
 				return;
 			}
 
 			setCountryOptions(options);
-			if (options.some((option) => option.iso_code === 'IN')) {
-				setLoginCountryCode('IN');
-				setRegistrationCountryCode('IN');
-				return;
-			}
-
-			setLoginCountryCode(options[0].iso_code);
-			setRegistrationCountryCode(options[0].iso_code);
-		};
-
-		void loadCountryCodes();
+			const defaultCountryCode = getDefaultCountryCodeValue(options);
+			setLoginCountryCode(defaultCountryCode);
+			setRegistrationCountryCode(defaultCountryCode);
+		});
 
 		return () => {
 			cancelled = true;
+			unregisterRequest('country-codes');
 		};
-	}, [countryOptionsEndpoint, selectedLanguage]);
+	}, [countryOptionsEndpoint, runRequest, unregisterRequest]);
+
+	useEffect(() => {
+		let cancelled = false;
+		void runRequest('genders', async (locale) => {
+			const options = await fetchGenderOptions(gendersEndpoint, locale);
+			if (cancelled) {
+				return;
+			}
+
+			setGenderOptions(options);
+		});
+
+		return () => {
+			cancelled = true;
+			unregisterRequest('genders');
+		};
+	}, [gendersEndpoint, runRequest, unregisterRequest]);
 
 	return (
 		<YStack flex={1} justifyContent="center" padding="$5">
 			<YStack maxWidth={760} width="100%" alignSelf="center" gap="$5">
 				<Card>
-					<YStack gap="$4">
-						<XStack gap="$3" flexWrap="wrap">
-							<Button
-								tone={
-									activeTab === 'login'
-										? 'primary'
-										: 'neutral'
-								}
-								onPress={() => {
-									setActiveTab('login');
-									resetMessage();
-								}}
-							>
-								Login
-							</Button>
-							<Button
-								tone={
-									activeTab === 'register'
-										? 'primary'
-										: 'neutral'
-								}
-								onPress={() => {
-									setActiveTab('register');
-									resetMessage();
-								}}
-							>
-								Register
-							</Button>
+					<YStack gap="$3">
+						<XStack
+							alignItems="center"
+							backgroundColor="rgba(2, 6, 23, 0.7)"
+							borderBottomColor="rgba(255, 255, 255, 0.05)"
+							borderBottomWidth={1}
+							borderRadius="$3"
+							flexWrap="wrap"
+							gap="$3"
+							justifyContent="space-between"
+							paddingHorizontal="$3"
+							paddingVertical="$2"
+						>
+							{headerLogo ?? null}
+							<XStack gap="$2" flexWrap="wrap">
+								<Button
+									tone={
+										activeTab === 'login'
+											? 'primary'
+											: 'neutral'
+									}
+									onPress={() => {
+										setActiveTab('login');
+										resetMessage();
+									}}
+								>
+									{t('common.actions.login')}
+								</Button>
+								<Button
+									tone={
+										activeTab === 'register'
+											? 'primary'
+											: 'neutral'
+									}
+									onPress={() => {
+										setActiveTab('register');
+										resetMessage();
+									}}
+								>
+									{t('userLogin.register')}
+								</Button>
+							</XStack>
 						</XStack>
 
 						{activeTab === 'login' ? (
 							<YStack gap="$4">
-								<Text fontSize="$8" fontWeight="700">
-									User login
-								</Text>
 								<Select
 									value={selectedLanguage}
 									onValueChange={(value) =>
@@ -181,7 +223,9 @@ export function LoginScreen({
 										label: option.label,
 										value: option.code
 									}))}
-									placeholder="Select language"
+									placeholder={t(
+										'common.placeholders.language'
+									)}
 								/>
 								<PhoneNumberRow
 									countryCode={loginCountryCode}
@@ -201,7 +245,9 @@ export function LoginScreen({
 								/>
 								{loginOtpRequested ? (
 									<Input
-										placeholder="Enter OTP"
+										placeholder={t(
+											'common.placeholders.otp'
+										)}
 										value={loginOtp}
 										onChangeText={(value) => {
 											setLoginOtp(
@@ -225,7 +271,12 @@ export function LoginScreen({
 												setLoginOtpRequested(true);
 												showSuccess(
 													otp ||
-														`OTP sent for ${loginCountryCode} ${COUNTRY_CODE} ${loginPhoneNumber}.`
+														t('userLogin.otpSent', {
+															countryCode:
+																loginCountryCode,
+															phoneNumber:
+																loginPhoneNumber
+														})
 												);
 												return;
 											}
@@ -235,14 +286,14 @@ export function LoginScreen({
 												loginOtp
 											);
 											showSuccess(
-												'User session started.'
+												t('userLogin.sessionStarted')
 											);
 											onLoginSuccess?.();
 										} catch (error) {
 											showError(
 												error instanceof Error
 													? error.message
-													: 'Unable to complete login.'
+													: t('userLogin.loginFailed')
 											);
 										}
 									}}
@@ -253,17 +304,17 @@ export function LoginScreen({
 									}
 								>
 									{loginOtpRequested
-										? 'Login'
-										: 'Generate OTP'}
+										? t('common.actions.login')
+										: t('common.actions.generateOtp')}
 								</Button>
 							</YStack>
 						) : (
 							<YStack gap="$4">
-								<Text fontSize="$8" fontWeight="700">
-									User registration
-								</Text>
 								<Text color="$colorHover">
-									Step {registrationStep} of 4
+									{t('common.status.stepOf', {
+										step: registrationStep,
+										total: 4
+									})}
 								</Text>
 
 								{registrationStep === 1 ? (
@@ -281,7 +332,9 @@ export function LoginScreen({
 													value: option.code
 												})
 											)}
-											placeholder="Select language"
+											placeholder={t(
+												'common.placeholders.language'
+											)}
 										/>
 										<Select
 											value={registrationCountryCode}
@@ -289,10 +342,14 @@ export function LoginScreen({
 												setRegistrationCountryCode
 											}
 											options={countrySelectOptions}
-											placeholder="Select country"
+											placeholder={t(
+												'common.placeholders.country'
+											)}
 										/>
 										<Input
-											placeholder="Mobile number"
+											placeholder={t(
+												'common.placeholders.mobileNumber'
+											)}
 											value={registrationPhoneNumber}
 											onChangeText={(value) => {
 												setRegistrationPhoneNumber(
@@ -310,7 +367,9 @@ export function LoginScreen({
 										/>
 										{registrationOtpRequested ? (
 											<Input
-												placeholder="Validate OTP"
+												placeholder={t(
+													'common.placeholders.validateOtp'
+												)}
 												value={registrationOtp}
 												onChangeText={(value) => {
 													setRegistrationOtp(
@@ -338,7 +397,15 @@ export function LoginScreen({
 														);
 														showSuccess(
 															otp ||
-																`OTP sent for ${registrationCountryCode} ${COUNTRY_CODE} ${registrationPhoneNumber}.`
+																t(
+																	'userLogin.otpSent',
+																	{
+																		countryCode:
+																			registrationCountryCode,
+																		phoneNumber:
+																			registrationPhoneNumber
+																	}
+																)
 														);
 														return;
 													}
@@ -355,13 +422,17 @@ export function LoginScreen({
 													);
 													setRegistrationStep(2);
 													showSuccess(
-														'OTP verified. Continue with identity details.'
+														t(
+															'userLogin.otpVerified'
+														)
 													);
 												} catch (error) {
 													showError(
 														error instanceof Error
 															? error.message
-															: 'Unable to validate OTP.'
+															: t(
+																	'userLogin.validateOtpFailed'
+																)
 													);
 												}
 											}}
@@ -372,33 +443,59 @@ export function LoginScreen({
 											}
 										>
 											{registrationOtpRequested
-												? 'Validate OTP'
-												: 'Generate OTP'}
+												? t(
+														'common.actions.validateOtp'
+													)
+												: t(
+														'common.actions.generateOtp'
+													)}
 										</Button>
 									</YStack>
 								) : null}
 
 								{registrationStep === 2 ? (
 									<YStack gap="$4">
+										<YStack gap="$2">
+											<Text color="$colorMuted">
+												{t(
+													'registration.firstNameRequired'
+												)}
+											</Text>
+											<Input
+												placeholder={t(
+													'common.labels.firstName'
+												)}
+												value={firstName}
+												onChangeText={setFirstName}
+											/>
+										</YStack>
 										<Input
-											placeholder="First name"
-											value={firstName}
-											onChangeText={setFirstName}
-										/>
-										<Input
-											placeholder="Middle names"
+											placeholder={t(
+												'common.labels.middleNames'
+											)}
 											value={middleNames}
 											onChangeText={setMiddleNames}
 										/>
+										<YStack gap="$2">
+											<Text color="$colorMuted">
+												{t(
+													'registration.lastNameRequired'
+												)}
+											</Text>
+											<Input
+												placeholder={t(
+													'common.labels.lastName'
+												)}
+												value={lastName}
+												onChangeText={setLastName}
+											/>
+										</YStack>
 										<Input
-											placeholder="Last name"
-											value={lastName}
-											onChangeText={setLastName}
-										/>
-										<Input
-											placeholder="Email address"
-											value={email}
-											onChangeText={setEmail}
+											placeholder={t(
+												'common.labels.nickname'
+											)}
+											value={nickname}
+											onChangeText={setNickname}
 										/>
 										<XStack gap="$3">
 											<Button
@@ -407,7 +504,7 @@ export function LoginScreen({
 													setRegistrationStep(1)
 												}
 											>
-												Back
+												{t('common.actions.back')}
 											</Button>
 											<Button
 												onPress={() =>
@@ -417,7 +514,7 @@ export function LoginScreen({
 													registrationIdentityDisabled
 												}
 											>
-												Continue
+												{t('common.actions.continue')}
 											</Button>
 										</XStack>
 									</YStack>
@@ -425,15 +522,20 @@ export function LoginScreen({
 
 								{registrationStep === 3 ? (
 									<YStack gap="$4">
-										<Input
-											placeholder="Organisation"
-											value={organization}
-											onChangeText={setOrganization}
+										<Select
+											value={genderId}
+											onValueChange={setGenderId}
+											options={genderSelectOptions}
+											placeholder={t(
+												'common.placeholders.gender'
+											)}
 										/>
-										<Input
-											placeholder="Role title"
-											value={roleTitle}
-											onChangeText={setRoleTitle}
+										<DatePicker
+											label={t(
+												'common.labels.dateOfBirth'
+											)}
+											value={dateOfBirth}
+											onChange={setDateOfBirth}
 										/>
 										<XStack gap="$3">
 											<Button
@@ -442,17 +544,17 @@ export function LoginScreen({
 													setRegistrationStep(2)
 												}
 											>
-												Back
+												{t('common.actions.back')}
 											</Button>
 											<Button
 												onPress={() =>
 													setRegistrationStep(4)
 												}
 												disabled={
-													registrationWorkspaceDisabled
+													registrationDemographicsDisabled
 												}
 											>
-												Review
+												{t('common.actions.review')}
 											</Button>
 										</XStack>
 									</YStack>
@@ -461,23 +563,29 @@ export function LoginScreen({
 								{registrationStep === 4 ? (
 									<YStack gap="$4">
 										<Card
-											title="Review"
-											description="Confirm the details before creating the user profile."
+											title={t('common.actions.review')}
+											description={t(
+												'userLogin.reviewDescription'
+											)}
 										>
 											<YStack gap="$2">
 												<Text color="$colorHover">
-													Language: {selectedLanguage}
+													{t(
+														'common.labels.language'
+													)}
+													: {selectedLanguage}
 												</Text>
 												<Text color="$colorHover">
-													Country:{' '}
-													{registrationCountryCode}
+													{t('common.labels.country')}
+													: {registrationCountryCode}
 												</Text>
 												<Text color="$colorHover">
-													Phone: {COUNTRY_CODE}{' '}
+													{t('common.labels.phone')}:{' '}
+													{COUNTRY_CODE}{' '}
 													{registrationPhoneNumber}
 												</Text>
 												<Text color="$colorHover">
-													Name:{' '}
+													{t('common.labels.name')}:{' '}
 													{[
 														firstName,
 														middleNames,
@@ -487,13 +595,33 @@ export function LoginScreen({
 														.join(' ')}
 												</Text>
 												<Text color="$colorHover">
-													Email: {email}
+													{t(
+														'common.labels.nickname'
+													)}
+													:{' '}
+													{nickname ||
+														t(
+															'common.values.notProvided'
+														)}
 												</Text>
 												<Text color="$colorHover">
-													Organisation: {organization}
+													{t('common.labels.gender')}:{' '}
+													{selectedGenderLabel ||
+														t(
+															'common.values.notSelected'
+														)}
 												</Text>
 												<Text color="$colorHover">
-													Role: {roleTitle}
+													{t(
+														'common.labels.dateOfBirth'
+													)}
+													:{' '}
+													{formatHumanFriendlyDate(
+														dateOfBirth,
+														t(
+															'common.values.notSelected'
+														)
+													)}
 												</Text>
 											</YStack>
 										</Card>
@@ -504,7 +632,7 @@ export function LoginScreen({
 													setRegistrationStep(3)
 												}
 											>
-												Back
+												{t('common.actions.back')}
 											</Button>
 											<Button
 												onPress={async () => {
@@ -516,9 +644,9 @@ export function LoginScreen({
 															firstName,
 															middleNames,
 															lastName,
-															email,
-															organization,
-															roleTitle
+															nickname,
+															genderId,
+															dateOfBirth
 														});
 														setActiveTab('login');
 														setRegistrationStep(1);
@@ -527,19 +655,25 @@ export function LoginScreen({
 														);
 														setRegistrationOtp('');
 														showSuccess(
-															'Profile created. Use the login tab to continue.'
+															t(
+																'userLogin.profileCreated'
+															)
 														);
 													} catch (error) {
 														showError(
 															error instanceof
 																Error
 																? error.message
-																: 'Unable to create the user profile.'
+																: t(
+																		'userLogin.createProfileFailed'
+																	)
 														);
 													}
 												}}
 											>
-												Create profile
+												{t(
+													'common.actions.createProfile'
+												)}
 											</Button>
 										</XStack>
 									</YStack>
@@ -578,29 +712,47 @@ function PhoneNumberRow({
 	phoneNumber: string;
 	onPhoneNumberChange: (value: string) => void;
 }) {
+	const { t } = useTwyrTranslation();
 	return (
-		<XStack gap="$3" flexWrap="wrap" alignItems="flex-start">
-			<YStack width={220} flexShrink={0} $sm={{ width: '100%' }}>
+		<YStack gap="$3" width="100%">
+			<YStack width="100%">
 				<Select
 					value={countryCode}
 					onValueChange={onCountryCodeChange}
 					options={countrySelectOptions}
-					placeholder="Select country"
+					placeholder={t('common.placeholders.country')}
 				/>
 			</YStack>
-			<YStack flex={1} minWidth={220} $sm={{ width: '100%', flex: 0 }}>
+			<YStack width="100%">
 				<Input
-					placeholder="Mobile number"
+					placeholder={t('common.placeholders.mobileNumber')}
 					value={phoneNumber}
 					onChangeText={onPhoneNumberChange}
 					keyboardType="number-pad"
 				/>
 			</YStack>
-		</XStack>
+		</YStack>
 	);
 }
 
-type CountryCodeOption = {
-	iso_code: string;
-	country_name: string;
-};
+function formatHumanFriendlyDate(value: string, fallbackLabel: string) {
+	const parsedValue = parseDateOnlyValue(value);
+
+	if (!parsedValue) {
+		return fallbackLabel;
+	}
+
+	const day = parsedValue.getDate();
+	const suffix =
+		day % 10 === 1 && day % 100 !== 11
+			? 'st'
+			: day % 10 === 2 && day % 100 !== 12
+				? 'nd'
+				: day % 10 === 3 && day % 100 !== 13
+					? 'rd'
+					: 'th';
+
+	return `${day}${suffix} ${parsedValue.toLocaleString('en-US', {
+		month: 'long'
+	})} ${parsedValue.getFullYear()}`;
+}

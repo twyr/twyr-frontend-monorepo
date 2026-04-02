@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { AppLanguageCode } from '@twyr/core';
+import { useTwyrTranslation } from '@twyr/i18n';
 import { Button, LanguageIcon, Popover } from '@twyr/ui-kit';
 import { Text, YStack, isWeb } from 'tamagui';
 
@@ -14,6 +16,8 @@ type Props = {
 };
 
 export function LanguageMenu({ value, options, onChange }: Props) {
+	const { t } = useTwyrTranslation();
+	const [open, setOpen] = useState(false);
 	const triggerButton = (
 		<Button
 			chromeless
@@ -21,7 +25,7 @@ export function LanguageMenu({ value, options, onChange }: Props) {
 			height={40}
 			padding={0}
 			borderRadius={999}
-			aria-label="Change language"
+			aria-label={t('common.tooltips.changeLanguage')}
 		>
 			<LanguageIcon color="currentColor" size={18} />
 		</Button>
@@ -29,6 +33,8 @@ export function LanguageMenu({ value, options, onChange }: Props) {
 
 	return (
 		<Popover
+			open={open}
+			onOpenChange={setOpen}
 			contentProps={{
 				padding: 0,
 				overflow: 'hidden'
@@ -36,7 +42,7 @@ export function LanguageMenu({ value, options, onChange }: Props) {
 			trigger={
 				isWeb ? (
 					<span
-						title="Change language"
+						title={t('common.tooltips.changeLanguage')}
 						style={{ display: 'inline-flex' }}
 					>
 						{triggerButton}
@@ -74,7 +80,10 @@ export function LanguageMenu({ value, options, onChange }: Props) {
 									? '$backgroundSoft'
 									: '$backgroundPress'
 						}}
-						onPress={() => onChange(option.code as AppLanguageCode)}
+						onPress={() => {
+							onChange(option.code as AppLanguageCode);
+							setOpen(false);
+						}}
 					>
 						<Text color="currentColor">{option.label}</Text>
 					</Button>

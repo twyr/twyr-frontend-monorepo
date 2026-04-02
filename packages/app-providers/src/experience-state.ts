@@ -18,6 +18,7 @@ export type ExperienceProfile = {
 	id?: string;
 	actorType: ExperienceActor;
 	genderId: string;
+	dateOfBirth: string;
 	names: Array<{
 		id?: string;
 		localeCode: string;
@@ -45,6 +46,7 @@ export type ExperienceProfile = {
 export type ExperienceActorState = {
 	authenticated: boolean;
 	sessionResolved: boolean;
+	skipNextProfileFetch: boolean;
 	language: AppLanguageCode;
 	sidebarCollapsed: boolean;
 	pendingOtp: string | null;
@@ -106,6 +108,7 @@ function defaultProfile(actor: ExperienceActor): ExperienceProfile {
 	return {
 		actorType: actor,
 		genderId: '',
+		dateOfBirth: '',
 		names: [
 			{
 				localeCode: DEFAULT_APP_LANGUAGE,
@@ -134,6 +137,7 @@ function defaultActorState(actor: ExperienceActor): ExperienceActorState {
 	return {
 		authenticated: false,
 		sessionResolved: false,
+		skipNextProfileFetch: false,
 		language: DEFAULT_APP_LANGUAGE,
 		sidebarCollapsed: false,
 		pendingOtp: null,
@@ -174,13 +178,15 @@ export function resetStoredSessionResolution(
 		users: state.users.authenticated
 			? {
 					...state.users,
-					sessionResolved: false
+					sessionResolved: false,
+					skipNextProfileFetch: false
 				}
 			: state.users,
 		system_administrators: state.system_administrators.authenticated
 			? {
 					...state.system_administrators,
-					sessionResolved: false
+					sessionResolved: false,
+					skipNextProfileFetch: false
 				}
 			: state.system_administrators
 	};
@@ -201,6 +207,7 @@ function normalizeActorState(
 	return {
 		authenticated: typedPayload.authenticated === true,
 		sessionResolved: typedPayload.sessionResolved === true,
+		skipNextProfileFetch: typedPayload.skipNextProfileFetch === true,
 		language: normalizeAppLanguage(
 			typeof typedPayload.language === 'string'
 				? typedPayload.language
@@ -344,6 +351,10 @@ function normalizeProfile(
 		genderId:
 			typeof typedPayload.genderId === 'string'
 				? typedPayload.genderId
+				: '',
+		dateOfBirth:
+			typeof typedPayload.dateOfBirth === 'string'
+				? typedPayload.dateOfBirth
 				: '',
 		names,
 		contacts,
@@ -490,7 +501,8 @@ export function logoutActor(
 			// eslint-disable-next-line security/detect-object-injection
 			...state[actor],
 			authenticated: false,
-			pendingOtp: null
+			pendingOtp: null,
+			skipNextProfileFetch: false
 		}
 	};
 }
@@ -549,6 +561,9 @@ export function setActorAuthenticated(
 			...state[actor],
 			authenticated,
 			sessionResolved: true,
+			skipNextProfileFetch: authenticated
+				? state[actor].skipNextProfileFetch
+				: false,
 			// eslint-disable-next-line security/detect-object-injection
 			pendingOtp: authenticated ? null : state[actor].pendingOtp
 		}
@@ -571,6 +586,26 @@ export function setActorSessionResolved(
 			// eslint-disable-next-line security/detect-object-injection
 			...state[actor],
 			sessionResolved
+		}
+	};
+}
+
+export function setActorSkipNextProfileFetch(
+	state: ExperienceState,
+	actor: ExperienceActor,
+	skipNextProfileFetch: boolean
+): ExperienceState {
+	// eslint-disable-next-line security/detect-object-injection
+	if (state[actor].skipNextProfileFetch === skipNextProfileFetch) {
+		return state;
+	}
+
+	return {
+		...state,
+		[actor]: {
+			// eslint-disable-next-line security/detect-object-injection
+			...state[actor],
+			skipNextProfileFetch
 		}
 	};
 }

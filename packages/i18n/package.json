@@ -1,0 +1,65 @@
+{
+	"name": "@twyr/i18n",
+	"type": "module",
+	"displayName": "I18n",
+	"description": "Shared i18n package for twyr-frontend-monorepo in node.js",
+	"homepage": "https://github.com/twyr/twyr-frontend-monorepo/tree/main/packages/i18n",
+	"license": "MITNFA",
+	"version": "0.1.0",
+	"readme": "README.md",
+	"private": true,
+	"keywords": [
+		"frontend",
+		"monorepo",
+		"twyr",
+		"typescript",
+		"nodejs",
+		"package",
+		"i18n"
+	],
+	"author": {
+		"name": "Vish Desai",
+		"email": "vish.desai@twyr.in",
+		"url": "https://github.com/twyr/"
+	},
+	"contributors": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"maintainers": [
+		{
+			"name": "Vish Desai",
+			"email": "vish.desai@twyr.in",
+			"url": "https://github.com/twyr/"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "ssh://git@github.com:twyr/twyr-frontend-monorepo.git"
+	},
+	"bugs": {
+		"url": "https://github.com/twyr/twyr-frontend-monorepo/issues"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json --noEmit",
+		"build:clean": "npm run clean && npm run build",
+		"clean": "rm -rf dist tsconfig.tsbuildinfo",
+		"force-build": "npm run clean && npm run build",
+		"lint": "eslint . && npm run typecheck",
+		"test": "node --test",
+		"typecheck": "tsc -p tsconfig.json --noEmit"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"main": "src/index.ts",
+	"types": "src/index.ts",
+	"dependencies": {
+		"i18next": "25.6.0",
+		"react": "19.2.4",
+		"react-i18next": "16.1.0"
+	}
+}

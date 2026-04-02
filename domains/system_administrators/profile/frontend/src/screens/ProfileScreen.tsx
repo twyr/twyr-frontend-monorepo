@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { AppLanguageCode, PortalProfileInput } from '@twyr/core';
+import { useTwyrTranslation } from '@twyr/i18n';
 import { ProfileEditor } from '@twyr/ui-composed';
 
 type LanguageOption = {
@@ -12,6 +13,7 @@ type Props = {
 	language: AppLanguageCode;
 	languageOptions: LanguageOption[];
 	contactTypesEndpoint: string;
+	gendersEndpoint: string;
 	onLanguageChange: (language: AppLanguageCode) => void;
 	onSave: (profile: PortalProfileInput) => Promise<void>;
 	onAddContact: (contact: {
@@ -46,6 +48,7 @@ export function ProfileScreen({
 	language,
 	languageOptions,
 	contactTypesEndpoint,
+	gendersEndpoint,
 	onSave,
 	onAddContact,
 	onMakePrimaryContact,
@@ -54,6 +57,7 @@ export function ProfileScreen({
 	onMakePrimaryLocale,
 	onDeleteLocale
 }: Props) {
+	const { t } = useTwyrTranslation();
 	const [localizedProfile, setLocalizedProfile] = useState(profile);
 
 	useEffect(() => {
@@ -62,16 +66,21 @@ export function ProfileScreen({
 
 	return (
 		<ProfileEditor
-			title="Administrator profile"
-			description="Update operator names, contacts, and locale assignments from the authenticated workspace."
-			nameCardTitle="Operator names"
-			nameCardDescription="Edit the active locale's administrator name fields in a single responsive row."
-			contactCardTitle="Contacts"
-			contactCardDescription="Review contacts, delete non-primary entries, and choose the primary contact."
-			localeCardTitle="Locales"
-			localeCardDescription="Choose one or more locales for the operator profile."
+			title={t('adminProfile.title')}
+			description={t('adminProfile.description')}
+			nameCardTitle={t('adminProfile.nameTitle')}
+			nameCardDescription={t('adminProfile.nameDescription')}
+			demographicsCardTitle={t('common.labels.demographics')}
+			demographicsCardDescription={t(
+				'adminProfile.demographicsDescription'
+			)}
+			contactCardTitle={t('common.labels.contacts')}
+			contactCardDescription={t('adminProfile.contactDescription')}
+			localeCardTitle={t('common.labels.locales')}
+			localeCardDescription={t('adminProfile.localeDescription')}
 			language={language}
 			contactTypesEndpoint={contactTypesEndpoint}
+			gendersEndpoint={gendersEndpoint}
 			profile={localizedProfile}
 			languageOptions={languageOptions}
 			onSave={async (nextProfile) => {

@@ -6,11 +6,23 @@ type Props = {
 	trigger: React.ReactNode;
 	children: React.ReactNode;
 	contentProps?: GetProps<typeof TamaguiPopover.Content>;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 };
 
-export function Popover({ trigger, children, contentProps }: Props) {
+export function Popover({
+	trigger,
+	children,
+	contentProps,
+	open,
+	onOpenChange
+}: Props) {
 	return (
-		<TamaguiPopover placement="bottom">
+		<TamaguiPopover
+			placement="bottom"
+			open={open}
+			onOpenChange={onOpenChange}
+		>
 			<TamaguiPopover.Trigger asChild>{trigger}</TamaguiPopover.Trigger>
 			<TamaguiPopover.Content
 				borderWidth={1}

@@ -2,6 +2,7 @@ export interface ProfileDto {
 	actorType: 'system_administrators';
 	id?: string;
 	genderId: string;
+	dateOfBirth: string;
 	names: Array<{
 		id?: string;
 		localeCode: string;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useTwyrTranslation } from '@twyr/i18n';
 import {
 	tamaguiConfig,
 	tailwindColors,
@@ -56,6 +57,7 @@ import {
 	StatCard
 } from '@twyr/ui-composed';
 import { Paragraph, XStack, YStack } from 'tamagui';
+import { getShowcaseCopy } from './copy';
 
 type ShowcasePlatform = 'web' | 'mobile';
 
@@ -357,13 +359,6 @@ const artifactRows: ArtifactRow[] = [
 	}
 ];
 
-const artifactColumns = [
-	{ accessorKey: 'artifact', header: 'Artifact' },
-	{ accessorKey: 'family', header: 'Family' },
-	{ accessorKey: 'platform', header: 'Platform' },
-	{ accessorKey: 'preview', header: 'Preview' }
-];
-
 const paletteFamilies = [
 	{ name: 'emerald', shades: tailwindColors.emerald },
 	{ name: 'slate', shades: tailwindColors.slate },
@@ -421,6 +416,8 @@ export function ArtifactShowcaseCatalog({
 	themeControl,
 	showToastViewport = false
 }: Props) {
+	const { i18n } = useTwyrTranslation();
+	const copy = getShowcaseCopy(i18n.language);
 	const [isMounted, setIsMounted] = useState(false);
 	const [checked, setChecked] = useState(true);
 	const [switchEnabled, setSwitchEnabled] = useState(false);
@@ -441,11 +438,11 @@ export function ArtifactShowcaseCatalog({
 	);
 
 	const platformLabel =
-		platform === 'web' ? 'web shell frame' : 'mobile shell surface';
+		platform === 'web' ? copy.shell.title : copy.shell.subtitle;
 	const shellHighlights =
 		platform === 'web'
-			? 'This page is mounted inside the shared ShellFrame, so AppSidebar, TopNav, ThemeToggle, and the shell chrome are live on the canvas.'
-			: 'This page is mounted inside the shared mobile shell surface, with the native theme toggle carried directly in the header actions.';
+			? copy.page.descriptionWeb
+			: copy.page.descriptionMobile;
 
 	const headerActions = (
 		<>
@@ -454,7 +451,7 @@ export function ArtifactShowcaseCatalog({
 				iconAfter={ArrowRightIcon}
 				onPress={() => setSheetOpen(true)}
 			>
-				Overlay tour
+				{copy.page.overlayTour}
 			</Button>
 			{themeControl}
 		</>
@@ -480,16 +477,16 @@ export function ArtifactShowcaseCatalog({
 	return (
 		<YStack padding="$5" gap="$6">
 			<PageHeader
-				eyebrow="Shell apps"
-				title="UI artifact showcase"
-				description={`The ${platformLabel} now exposes the shared UI catalog: primitives, composed widgets, and design-system foundations. ${shellHighlights}`}
+				eyebrow={copy.page.eyebrow}
+				title={copy.page.title}
+				description={`${platformLabel}. ${shellHighlights}`}
 				actions={headerActions}
 			/>
 
 			<YStack id="overview" gap="$4">
 				<SectionHeader
-					title="Coverage"
-					description="High-level status for the reusable artifacts shipped in this monorepo."
+					title={copy.sections.coverage}
+					description={copy.shell.subtitle}
 				/>
 				<XStack gap="$4" flexWrap="wrap">
 					<PreviewColumn>
@@ -961,17 +958,28 @@ export function ArtifactShowcaseCatalog({
 				</XStack>
 
 				<DataTable
-					title="Artifact inventory"
-					description="A live DataTable instance doubles as a searchable inventory of the reusable surfaces shipped in this repository."
-					columns={artifactColumns}
+					title={copy.common.artifact}
+					description={copy.shell.subtitle}
+					columns={[
+						{
+							accessorKey: 'artifact',
+							header: copy.common.artifact
+						},
+						{ accessorKey: 'family', header: copy.common.family },
+						{
+							accessorKey: 'platform',
+							header: copy.common.platform
+						},
+						{ accessorKey: 'preview', header: copy.common.preview }
+					]}
 					data={artifactRows}
 				/>
 			</YStack>
 
 			<YStack id="design-system" gap="$4">
 				<SectionHeader
-					title="Design-system variants"
-					description="Semantic themes, palette families, spatial scales, typography, motion, and configuration details that underpin the UI catalog."
+					title={copy.sections.designSystem}
+					description={copy.shell.subtitle}
 				/>
 				<XStack gap="$4" flexWrap="wrap">
 					<PreviewColumn>

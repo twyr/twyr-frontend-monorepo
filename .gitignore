@@ -4,5 +4,8 @@ dist
 .expo
 .turbo
 coverage
+test-results
 .env
 .env.*
+.tmp-playright
+.tmp-playwright

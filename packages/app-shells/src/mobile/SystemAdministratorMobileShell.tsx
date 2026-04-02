@@ -1,10 +1,11 @@
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { XStack, YStack } from 'tamagui';
 import {
 	useMobilePortalExperience,
 	useMobileThemeMode
 } from '@twyr/app-providers/src/mobile';
+import { useTwyrTranslation } from '@twyr/i18n';
 import {
 	Button,
 	LayoutDashboardIcon,
@@ -19,16 +20,19 @@ import { LanguageMenu } from '../shared/LanguageMenu';
 
 type Props = PropsWithChildren<{
 	activeRoute: 'dashboard' | 'profile';
+	headerBrand?: ReactNode;
 	onNavigate: (route: 'dashboard' | 'profile') => void;
 	onLogout?: () => void;
 }>;
 
 export function SystemAdministratorMobileShell({
 	activeRoute,
+	headerBrand,
 	onNavigate,
 	onLogout,
 	children
 }: Props) {
+	const { t } = useTwyrTranslation();
 	const { themeMode, setThemeMode, resolvedTheme } = useMobileThemeMode();
 	const { state, languageOptions, setLanguage, setSidebarCollapsed, logout } =
 		useMobilePortalExperience('system_administrators');
@@ -37,52 +41,55 @@ export function SystemAdministratorMobileShell({
 		<YStack flex={1} theme={resolvedTheme} backgroundColor="$background">
 			<YStack padding="$4" gap="$4">
 				<XStack justifyContent="space-between" alignItems="center">
-					<Tooltip
-						content={
-							state.sidebarCollapsed
-								? 'Open menu'
-								: 'Collapse menu'
-						}
-					>
-						<Button
-							chromeless
-							onPress={() =>
-								setSidebarCollapsed(!state.sidebarCollapsed)
-							}
-							width={40}
-							height={40}
-							padding={0}
-							hoverStyle={{
-								backgroundColor: 'transparent',
-								opacity: 0.8
-							}}
-							pressStyle={{
-								backgroundColor: 'transparent',
-								opacity: 0.65
-							}}
-							focusStyle={{
-								backgroundColor: 'transparent',
-								opacity: 0.8
-							}}
-							aria-label={
+					<XStack alignItems="center" gap="$2">
+						<Tooltip
+							content={
 								state.sidebarCollapsed
-									? 'Open menu'
-									: 'Collapse menu'
+									? t('common.tooltips.openMenu')
+									: t('common.tooltips.collapseMenu')
 							}
 						>
-							{state.sidebarCollapsed ? (
-								<LayoutSidebarLeftExpandIcon
-									color="currentColor"
-									size={18}
-								/>
-							) : (
-								<LayoutSidebarLeftCollapseIcon
-									color="currentColor"
-									size={18}
-								/>
-							)}
-						</Button>
-					</Tooltip>
+							<Button
+								chromeless
+								onPress={() =>
+									setSidebarCollapsed(!state.sidebarCollapsed)
+								}
+								width={40}
+								height={40}
+								padding={0}
+								hoverStyle={{
+									backgroundColor: 'transparent',
+									opacity: 0.8
+								}}
+								pressStyle={{
+									backgroundColor: 'transparent',
+									opacity: 0.65
+								}}
+								focusStyle={{
+									backgroundColor: 'transparent',
+									opacity: 0.8
+								}}
+								aria-label={
+									state.sidebarCollapsed
+										? t('common.tooltips.openMenu')
+										: t('common.tooltips.collapseMenu')
+								}
+							>
+								{state.sidebarCollapsed ? (
+									<LayoutSidebarLeftExpandIcon
+										color="currentColor"
+										size={18}
+									/>
+								) : (
+									<LayoutSidebarLeftCollapseIcon
+										color="currentColor"
+										size={18}
+									/>
+								)}
+							</Button>
+						</Tooltip>
+						{headerBrand ?? null}
+					</XStack>
 					<MobileThemeToggle
 						value={themeMode}
 						onChange={setThemeMode}
@@ -91,13 +98,15 @@ export function SystemAdministratorMobileShell({
 				{!state.sidebarCollapsed ? (
 					<YStack position="relative">
 						<Pressable
-							accessibilityLabel="Collapse menu"
+							accessibilityLabel={t(
+								'common.tooltips.collapseMenu'
+							)}
 							onPress={() => setSidebarCollapsed(true)}
 							style={StyleSheet.absoluteFillObject}
 						/>
 						<CardLikeMenu>
 							<YStack gap="$3">
-								<Tooltip content="Profile">
+								<Tooltip content={t('common.tooltips.profile')}>
 									<Button
 										chromeless
 										onPress={() => {
@@ -107,7 +116,7 @@ export function SystemAdministratorMobileShell({
 										justifyContent="flex-start"
 										icon={<ProfileIcon size={18} />}
 									>
-										Profile
+										{t('common.actions.profile')}
 									</Button>
 								</Tooltip>
 								<LanguageMenu
@@ -116,7 +125,9 @@ export function SystemAdministratorMobileShell({
 									onChange={setLanguage}
 								/>
 								<XStack gap="$3" flexWrap="wrap">
-									<Tooltip content="Dashboard">
+									<Tooltip
+										content={t('common.tooltips.dashboard')}
+									>
 										<Button
 											tone={
 												activeRoute === 'dashboard'
@@ -133,10 +144,12 @@ export function SystemAdministratorMobileShell({
 												/>
 											}
 										>
-											Dashboard
+											{t('common.actions.dashboard')}
 										</Button>
 									</Tooltip>
-									<Tooltip content="Logout">
+									<Tooltip
+										content={t('common.tooltips.logout')}
+									>
 										<Button
 											chromeless
 											onPress={onLogout ?? logout}
@@ -156,7 +169,9 @@ export function SystemAdministratorMobileShell({
 												backgroundColor: 'transparent',
 												opacity: 0.8
 											}}
-											aria-label="Logout"
+											aria-label={t(
+												'common.tooltips.logout'
+											)}
 										>
 											<LogoutIcon
 												color="currentColor"

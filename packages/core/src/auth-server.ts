@@ -24,11 +24,25 @@ function getDefaultEnvironment(): AuthServerEnvironment {
 	return processLike?.env ?? {};
 }
 
+function normalizeLoopbackHost(host: string): string {
+	const trimmedHost = host.trim();
+
+	if (
+		typeof window !== 'undefined' &&
+		window.location.hostname === 'localhost' &&
+		(trimmedHost === '127.0.0.1' || trimmedHost === '0.0.0.0')
+	) {
+		return 'localhost';
+	}
+
+	return trimmedHost.length > 0 ? trimmedHost : 'localhost';
+}
+
 export function resolveAuthServerBaseUrl(
 	env: AuthServerEnvironment = getDefaultEnvironment()
 ): string {
 	const protocol = env.AUTH_SERVER_PROTOCOL ?? 'http';
-	const host = env.AUTH_SERVER_IP ?? 'localhost';
+	const host = normalizeLoopbackHost(env.AUTH_SERVER_IP ?? 'localhost');
 	const port = env.AUTH_SERVER_PORT ?? '9090';
 
 	return `${protocol}://${host}:${port}`;

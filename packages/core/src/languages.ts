@@ -2,14 +2,14 @@ export const DEFAULT_APP_LANGUAGE = 'en-IN';
 
 export const APP_LANGUAGE_OPTIONS = [
 	{ code: 'en-IN', label: 'English' },
-	{ code: 'hi-IN', label: 'Hindi' },
-	{ code: 'kn-IN', label: 'Kannada' },
-	{ code: 'ml-IN', label: 'Malayalam' },
-	{ code: 'mr-IN', label: 'Marathi' },
-	{ code: 'ta-IN', label: 'Tamil' },
-	{ code: 'te-IN', label: 'Telugu' },
-	{ code: 'gu-IN', label: 'Gujarati' },
-	{ code: 'bn-BD', label: 'Bangla' }
+	{ code: 'hi-IN', label: 'हिन्दी' },
+	{ code: 'kn-IN', label: 'ಕನ್ನಡ' },
+	{ code: 'ml-IN', label: 'മലയാളം' },
+	{ code: 'mr-IN', label: 'मराठी' },
+	{ code: 'ta-IN', label: 'தமிழ்' },
+	{ code: 'te-IN', label: 'తెలుగు' },
+	{ code: 'gu-IN', label: 'ગુજરાતી' },
+	{ code: 'bn-BD', label: 'বাংলা' }
 ] as const;
 
 export type AppLanguageCode = (typeof APP_LANGUAGE_OPTIONS)[number]['code'];

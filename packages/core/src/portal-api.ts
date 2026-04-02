@@ -1,4 +1,6 @@
 import type { AppLanguageCode } from './languages';
+import { normalizeDateOnlyValue } from './date-only';
+import { runWithInFlightDeduplication } from './inflight-requests';
 
 export type PortalActor = 'users' | 'system_administrators';
 
@@ -8,15 +10,16 @@ export type PortalRegistrationDraft = {
 	firstName: string;
 	middleNames: string;
 	lastName: string;
-	email: string;
-	organization: string;
-	roleTitle: string;
+	nickname: string;
+	genderId: string;
+	dateOfBirth: string;
 };
 
 export type PortalProfileInput = {
 	id?: string;
 	actorType: PortalActor;
 	genderId: string;
+	dateOfBirth: string;
 	names: Array<{
 		id?: string;
 		localeCode: string;
@@ -39,6 +42,10 @@ export type PortalProfileInput = {
 		localeId: string;
 		isPrimary: boolean;
 	}>;
+};
+
+export type PortalLoginResult = {
+	primaryLocale?: AppLanguageCode;
 };
 
 export type PortalAction =
@@ -150,9 +157,9 @@ export function buildPortalRegistrationPayload(
 				first_name: draft.firstName.trim(),
 				middle_names: draft.middleNames.trim(),
 				last_name: draft.lastName.trim(),
-				email: draft.email.trim(),
-				organization_name: draft.organization.trim(),
-				role_title: draft.roleTitle.trim(),
+				nickname: draft.nickname.trim(),
+				gender_id: draft.genderId.trim(),
+				date_of_birth: normalizeDateOnlyValue(draft.dateOfBirth),
 				otp: draft.otp.trim()
 			}
 		}
@@ -217,6 +224,21 @@ export function buildPortalProfileUpdatePayload(
 	if (Object.keys(attributes).length > 0) {
 		attributes.locale_id =
 			primaryName?.localeCode ?? primaryLocale?.localeCode ?? '';
+	}
+
+	if (
+		!previousProfile ||
+		profile.genderId.trim() !== previousProfile.genderId.trim()
+	) {
+		attributes.gender_id = profile.genderId.trim();
+	}
+
+	if (
+		!previousProfile ||
+		normalizeDateOnlyValue(profile.dateOfBirth) !==
+			normalizeDateOnlyValue(previousProfile.dateOfBirth)
+	) {
+		attributes.date_of_birth = normalizeDateOnlyValue(profile.dateOfBirth);
 	}
 
 	return {
@@ -701,6 +723,11 @@ export function mapPortalProfilePayload(
 					asString((attributes as { type?: unknown }).type)
 			) ?? fallback.actorType,
 		genderId: asString(attributes.gender_id) || fallback.genderId,
+		dateOfBirth: normalizeDateOnlyValue(
+			asString(attributes.date_of_birth) ||
+				asString(attributes.dob) ||
+				fallback.dateOfBirth
+		),
 		names: names.length > 0 ? names : fallback.names,
 		contacts: normalizedContacts,
 		locales: locales.length > 0 ? locales : fallback.locales
@@ -717,6 +744,49 @@ function actorFromEntityType(type: string): PortalActor | null {
 	}
 
 	return null;
+}
+
+function mapPortalLoginPayload(
+	actor: PortalActor,
+	payload: unknown
+): PortalLoginResult {
+	const loginPayload =
+		typeof payload === 'object' &&
+		payload !== null &&
+		'body' in payload &&
+		typeof (payload as { body?: unknown }).body === 'object' &&
+		(payload as { body?: unknown }).body !== null
+			? (payload as { body: unknown }).body
+			: payload;
+	const includedResources = getIncludedResources(loginPayload);
+	const primaryLocaleResource = includedResources.find((resource) => {
+		const attributes =
+			typeof resource.attributes === 'object' &&
+			resource.attributes !== null
+				? (resource.attributes as Record<string, unknown>)
+				: {};
+
+		return (
+			asString(resource.type) === PORTAL_LOCALE_ENTITY_TYPES[actor] &&
+			attributes.is_primary === true
+		);
+	});
+
+	if (!primaryLocaleResource) {
+		return {};
+	}
+
+	const attributes =
+		typeof primaryLocaleResource.attributes === 'object' &&
+		primaryLocaleResource.attributes !== null
+			? (primaryLocaleResource.attributes as Record<string, unknown>)
+			: {};
+	const primaryLocale =
+		asString(attributes.locale_code) || asString(attributes.locale_id);
+
+	return primaryLocale
+		? { primaryLocale: primaryLocale as AppLanguageCode }
+		: {};
 }
 
 type PortalApiClientOptions = {
@@ -832,6 +902,20 @@ export function createPortalApiClient({
 				locale
 			);
 			await ensureSuccess(response, 'Unable to complete login.');
+
+			const responseText = (await response.text()).trim();
+			if (!responseText) {
+				return {};
+			}
+
+			try {
+				return mapPortalLoginPayload(
+					actor,
+					JSON.parse(responseText) as unknown
+				);
+			} catch {
+				return {};
+			}
 		},
 		logout: async (locale?: AppLanguageCode) => {
 			const response = await request(
@@ -844,38 +928,61 @@ export function createPortalApiClient({
 			await ensureSuccess(response, 'Unable to complete logout.');
 		},
 		validateSession: async (locale?: AppLanguageCode) => {
-			const response = await request(
-				'validate-session',
-				{
-					method: 'GET'
-				},
+			const requestUrl = buildUrl(
+				getPortalApiPath(actor, 'validate-session'),
 				locale
 			);
 
-			if (!response.ok) {
-				return false;
-			}
+			return runWithInFlightDeduplication(
+				`GET:${requestUrl}`,
+				async () => {
+					const response = await request(
+						'validate-session',
+						{
+							method: 'GET'
+						},
+						locale
+					);
 
-			const payload = (await response.json()) as {
-				authenticated?: unknown;
-			};
-			return payload.authenticated === true;
+					if (!response.ok) {
+						return false;
+					}
+
+					const payload = (await response.json()) as {
+						authenticated?: unknown;
+					};
+					return payload.authenticated === true;
+				}
+			);
 		},
 		fetchProfile: async (
 			fallback: PortalProfileInput,
 			locale?: AppLanguageCode
 		) => {
-			const response = await request(
-				'profile',
-				{
-					method: 'GET'
-				},
+			const requestUrl = buildUrl(
+				getPortalApiPath(actor, 'profile'),
 				locale
 			);
-			await ensureSuccess(response, 'Unable to load the profile.');
 
-			const payload = (await response.json()) as unknown;
-			return mapPortalProfilePayload(payload, fallback);
+			return runWithInFlightDeduplication(
+				`GET:${requestUrl}`,
+				async () => {
+					const response = await request(
+						'profile',
+						{
+							method: 'GET'
+						},
+						locale
+					);
+					await ensureSuccess(
+						response,
+						'Unable to load the profile.'
+					);
+
+					const payload = (await response.json()) as unknown;
+					return mapPortalProfilePayload(payload, fallback);
+				}
+			);
 		},
 		register: async (
 			draft: PortalRegistrationDraft,

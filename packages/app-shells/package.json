@@ -62,6 +62,7 @@
 		"@twyr/app-providers": "0.1.0",
 		"@twyr/core": "0.1.0",
 		"@twyr/design-system": "0.1.0",
+		"@twyr/i18n": "0.1.0",
 		"@twyr/ui-composed": "0.1.0",
 		"@twyr/ui-kit": "0.1.0",
 		"react": "19.2.4",

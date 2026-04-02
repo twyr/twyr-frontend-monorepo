@@ -12,11 +12,17 @@ import {
 	TrashIcon
 } from '@twyr/ui-kit';
 import {
+	fetchGenderOptions,
 	fetchContactTypeOptions,
+	normalizeDateOnlyValue,
 	type AppLanguageCode,
-	type ContactTypeOption
+	type ContactTypeOption,
+	type GenderOption
 } from '@twyr/core';
+import { useLocalizedPageRequests } from '@twyr/app-providers/src/page-requests';
+import { useTwyrTranslation } from '@twyr/i18n';
 import { Paragraph, Text, XStack, YStack } from 'tamagui';
+import { DatePicker } from './DatePicker';
 
 type ProfileName = {
 	id?: string;
@@ -47,6 +53,7 @@ type ProfileForm = {
 	id?: string;
 	actorType: 'users' | 'system_administrators';
 	genderId: string;
+	dateOfBirth: string;
 	names: ProfileName[];
 	contacts: ProfileContact[];
 	locales: ProfileLocale[];
@@ -62,12 +69,15 @@ type Props = {
 	description: string;
 	nameCardTitle: string;
 	nameCardDescription: string;
+	demographicsCardTitle: string;
+	demographicsCardDescription: string;
 	contactCardTitle: string;
 	contactCardDescription: string;
 	localeCardTitle: string;
 	localeCardDescription: string;
 	language: AppLanguageCode;
 	contactTypesEndpoint: string;
+	gendersEndpoint: string;
 	profile: ProfileForm;
 	languageOptions: LanguageOption[];
 	onSave: (profile: ProfileForm) => Promise<void>;
@@ -103,12 +113,15 @@ export function ProfileEditor({
 	description,
 	nameCardTitle,
 	nameCardDescription,
+	demographicsCardTitle,
+	demographicsCardDescription,
 	contactCardTitle,
 	contactCardDescription,
 	localeCardTitle,
 	localeCardDescription,
 	language,
 	contactTypesEndpoint,
+	gendersEndpoint,
 	profile,
 	languageOptions,
 	onSave: _onSave,
@@ -119,13 +132,21 @@ export function ProfileEditor({
 	onMakePrimaryLocale,
 	onDeleteLocale
 }: Props) {
+	const { t } = useTwyrTranslation();
+	const { runRequest, unregisterRequest } =
+		useLocalizedPageRequests(language);
 	const [savedProfile, setSavedProfile] = useState(profile);
 	const [nameDraft, setNameDraft] = useState(profile.names);
+	const [demographicsDraft, setDemographicsDraft] = useState({
+		genderId: profile.genderId,
+		dateOfBirth: profile.dateOfBirth
+	});
 	const [contactsDraft, setContactsDraft] = useState(profile.contacts);
 	const [localesDraft, setLocalesDraft] = useState(profile.locales);
 	const [contactTypeOptions, setContactTypeOptions] = useState<
 		ContactTypeOption[]
 	>([]);
+	const [genderOptions, setGenderOptions] = useState<GenderOption[]>([]);
 	const [contactDialogOpen, setContactDialogOpen] = useState(false);
 	const [selectedContactType, setSelectedContactType] =
 		useState<ContactTypeOption | null>(null);
@@ -155,33 +176,79 @@ export function ProfileEditor({
 		nickname: ''
 	};
 	const isNameDirty = !areNamesEqual(nameDraft, savedProfile.names);
+	const isDemographicsDirty =
+		demographicsDraft.genderId !== savedProfile.genderId ||
+		demographicsDraft.dateOfBirth !== savedProfile.dateOfBirth;
+	const contactTypeDisplayNames = useMemo(
+		() =>
+			new Map(
+				contactTypeOptions.map((option) => [
+					option.name,
+					option.displayName
+				])
+			),
+		[contactTypeOptions]
+	);
 	useEffect(() => {
 		setSavedProfile(profile);
 		setNameDraft(profile.names);
+		setDemographicsDraft({
+			genderId: profile.genderId,
+			dateOfBirth: profile.dateOfBirth
+		});
 		setContactsDraft(profile.contacts);
 		setLocalesDraft(profile.locales);
 	}, [profile]);
 
 	useEffect(() => {
 		let cancelled = false;
-
-		void fetchContactTypeOptions(contactTypesEndpoint, language).then(
-			(options) => {
-				if (cancelled) {
-					return;
-				}
-
-				setContactTypeOptions(options);
-				if (!selectedContactType && options[0]) {
-					setSelectedContactType(options[0]);
-				}
+		void runRequest('contact-types', async (locale) => {
+			const options = await fetchContactTypeOptions(
+				contactTypesEndpoint,
+				locale
+			);
+			if (cancelled) {
+				return;
 			}
-		);
+
+			setContactTypeOptions(options);
+			setSelectedContactType((currentSelection) => {
+				if (!currentSelection) {
+					return options[0] ?? null;
+				}
+
+				return (
+					options.find(
+						(option) => option.name === currentSelection.name
+					) ??
+					options[0] ??
+					null
+				);
+			});
+		});
 
 		return () => {
 			cancelled = true;
+			unregisterRequest('contact-types');
 		};
-	}, [contactTypesEndpoint, language, selectedContactType]);
+	}, [contactTypesEndpoint, runRequest, unregisterRequest]);
+
+	useEffect(() => {
+		let cancelled = false;
+		void runRequest('genders', async (locale) => {
+			const options = await fetchGenderOptions(gendersEndpoint, locale);
+			if (cancelled) {
+				return;
+			}
+
+			setGenderOptions(options);
+		});
+
+		return () => {
+			cancelled = true;
+			unregisterRequest('genders');
+		};
+	}, [gendersEndpoint, runRequest, unregisterRequest]);
 
 	const resetContactDialog = () => {
 		setContactDialogOpen(false);
@@ -251,7 +318,7 @@ export function ProfileEditor({
 			setContactsError(
 				error instanceof Error
 					? error.message
-					: 'Unable to delete the contact.'
+					: t('profileEditor.cannotDeleteContact')
 			);
 		}
 	};
@@ -284,7 +351,7 @@ export function ProfileEditor({
 			setContactsError(
 				error instanceof Error
 					? error.message
-					: 'Unable to update the primary contact.'
+					: t('profileEditor.cannotUpdatePrimaryContact')
 			);
 		}
 	};
@@ -329,8 +396,8 @@ export function ProfileEditor({
 				error instanceof Error
 					? error.message
 					: enabled
-						? 'Unable to add the locale.'
-						: 'Unable to delete the locale.'
+						? t('profileEditor.cannotAddLocale')
+						: t('profileEditor.cannotDeleteLocale')
 			);
 		}
 	};
@@ -359,7 +426,7 @@ export function ProfileEditor({
 			setLocalesError(
 				error instanceof Error
 					? error.message
-					: 'Unable to update the primary locale.'
+					: t('profileEditor.cannotUpdatePrimaryLocale')
 			);
 		}
 	};
@@ -371,6 +438,20 @@ export function ProfileEditor({
 		};
 		await _onSave(nextProfile);
 		setSavedProfile(nextProfile);
+	};
+
+	const saveDemographics = async () => {
+		const nextProfile = {
+			...savedProfile,
+			genderId: demographicsDraft.genderId,
+			dateOfBirth: normalizeDateOnlyValue(demographicsDraft.dateOfBirth)
+		};
+		await _onSave(nextProfile);
+		setSavedProfile(nextProfile);
+		setDemographicsDraft({
+			genderId: nextProfile.genderId,
+			dateOfBirth: nextProfile.dateOfBirth
+		});
 	};
 
 	const addContact = async () => {
@@ -402,7 +483,7 @@ export function ProfileEditor({
 			setContactDialogError(
 				error instanceof Error
 					? error.message
-					: 'Unable to add the contact.'
+					: t('profileEditor.addContactFailed')
 			);
 		}
 	};
@@ -427,30 +508,30 @@ export function ProfileEditor({
 					/>
 				}
 			>
-				<XStack gap="$3" flexWrap="wrap" alignItems="flex-start">
+				<XStack gap="$3" flexWrap="wrap" alignItems="flex-end">
 					<NameField
-						label="First name"
+						label={t('common.labels.firstName')}
 						value={primaryName.firstName}
 						onChangeText={(value) =>
 							updatePrimaryName('firstName', value)
 						}
 					/>
 					<NameField
-						label="Middle names"
+						label={t('common.labels.middleNames')}
 						value={primaryName.middleNames}
 						onChangeText={(value) =>
 							updatePrimaryName('middleNames', value)
 						}
 					/>
 					<NameField
-						label="Last name"
+						label={t('common.labels.lastName')}
 						value={primaryName.lastName}
 						onChangeText={(value) =>
 							updatePrimaryName('lastName', value)
 						}
 					/>
 					<NameField
-						label="Nickname"
+						label={t('common.labels.nickname')}
 						value={primaryName.nickname}
 						onChangeText={(value) =>
 							updatePrimaryName('nickname', value)
@@ -459,49 +540,77 @@ export function ProfileEditor({
 				</XStack>
 			</Card>
 
-			<YStack gap="$4">
-				<YStack width="100%">
-					<Card
-						title={contactCardTitle}
-						description={contactCardDescription}
-						footer={
-							<Button
-								tone="primary"
-								onPress={() => setContactDialogOpen(true)}
-							>
-								Add
-							</Button>
-						}
+			<Card
+				title={demographicsCardTitle}
+				description={demographicsCardDescription}
+				footer={
+					<CardFooter
+						dirty={isDemographicsDirty}
+						onCancel={() => {
+							setDemographicsDraft({
+								genderId: savedProfile.genderId,
+								dateOfBirth: savedProfile.dateOfBirth
+							});
+						}}
+						onSave={saveDemographics}
+					/>
+				}
+			>
+				<XStack gap="$3" flexWrap="wrap" alignItems="flex-end">
+					<YStack
+						width="32%"
+						minWidth={220}
+						gap="$2"
+						$md={{ width: '100%' }}
 					>
-						<YStack
-							borderWidth={1}
-							borderColor="$borderColor"
-							borderRadius="$4"
-							overflow="hidden"
-						>
-							<ContactTableHeader />
-							{contactsDraft.map((contact, index) => (
-								<ContactTableRow
-									key={
-										contact.id ??
-										`${contact.typeName}-${contact.value}`
-									}
-									contact={contact}
-									onDelete={() => {
-										void removeContact(index);
-									}}
-									onMakePrimary={() => {
-										void makePrimaryContact(index);
-									}}
-								/>
-							))}
-						</YStack>
-						{contactsError ? (
-							<Text color="$danger">{contactsError}</Text>
-						) : null}
-					</Card>
-				</YStack>
+						<Paragraph size="$2" color="$colorMuted">
+							{t('common.labels.gender')}
+						</Paragraph>
+						<Select
+							value={demographicsDraft.genderId}
+							onValueChange={(value) => {
+								setDemographicsDraft((current) => ({
+									...current,
+									genderId: value
+								}));
+							}}
+							options={[
+								{
+									label: t('profileEditor.unspecified'),
+									value: ''
+								},
+								...genderOptions.map((option) => ({
+									label: option.label,
+									value: option.id
+								}))
+							]}
+							placeholder={t('common.placeholders.gender')}
+						/>
+					</YStack>
+					<YStack
+						width="32%"
+						minWidth={220}
+						gap="$2"
+						$md={{ width: '100%' }}
+					>
+						<Paragraph size="$2" color="$colorMuted">
+							{t('common.labels.dateOfBirth')}
+						</Paragraph>
+						<DatePicker
+							value={demographicsDraft.dateOfBirth}
+							hideLabel
+							onChange={(value) => {
+								setDemographicsDraft((current) => ({
+									...current,
+									dateOfBirth: value
+								}));
+							}}
+						/>
+					</YStack>
+				</XStack>
+			</Card>
 
+			<YStack gap="$4">
 				<YStack width="100%">
 					<Card
 						title={localeCardTitle}
@@ -510,7 +619,7 @@ export function ProfileEditor({
 						<YStack gap="$4">
 							<YStack gap="$2">
 								<Paragraph size="$2" color="$colorMuted">
-									Available locales
+									{t('common.labels.availableLocales')}
 								</Paragraph>
 								<XStack gap="$2" flexWrap="wrap">
 									{languageOptions.map((option) => {
@@ -573,7 +682,9 @@ export function ProfileEditor({
 															);
 														}}
 													>
-														Deselect
+														{t(
+															'common.actions.deselect'
+														)}
 													</Button>
 													<Button
 														tone="neutral"
@@ -591,7 +702,9 @@ export function ProfileEditor({
 															);
 														}}
 													>
-														Make Primary
+														{t(
+															'common.actions.makePrimary'
+														)}
 													</Button>
 												</YStack>
 											</Popover>
@@ -605,6 +718,53 @@ export function ProfileEditor({
 						</YStack>
 					</Card>
 				</YStack>
+
+				<YStack width="100%">
+					<Card
+						title={contactCardTitle}
+						description={contactCardDescription}
+						footer={
+							<Button
+								tone="primary"
+								onPress={() => setContactDialogOpen(true)}
+							>
+								{t('common.actions.add')}
+							</Button>
+						}
+					>
+						<YStack
+							borderWidth={1}
+							borderColor="$borderColor"
+							borderRadius="$4"
+							overflow="hidden"
+						>
+							<ContactTableHeader />
+							{contactsDraft.map((contact, index) => (
+								<ContactTableRow
+									key={
+										contact.id ??
+										`${contact.typeName}-${contact.value}`
+									}
+									contact={contact}
+									displayTypeName={
+										contactTypeDisplayNames.get(
+											contact.typeName
+										) ?? formatContactType(contact.typeName)
+									}
+									onDelete={() => {
+										void removeContact(index);
+									}}
+									onMakePrimary={() => {
+										void makePrimaryContact(index);
+									}}
+								/>
+							))}
+						</YStack>
+						{contactsError ? (
+							<Text color="$danger">{contactsError}</Text>
+						) : null}
+					</Card>
+				</YStack>
 			</YStack>
 			<Dialog
 				open={contactDialogOpen}
@@ -616,10 +776,10 @@ export function ProfileEditor({
 
 					setContactDialogOpen(open);
 				}}
-				title="Add contact"
-				description="Choose a supported contact type and enter the contact value."
-				confirmLabel="Save"
-				cancelLabel="Cancel"
+				title={t('common.actions.add')}
+				description={t('profileEditor.addContactDescription')}
+				confirmLabel={t('common.actions.save')}
+				cancelLabel={t('common.actions.cancel')}
 				confirmDisabled={
 					!selectedContactType?.name ||
 					!selectedContactType.id ||
@@ -632,7 +792,7 @@ export function ProfileEditor({
 				<YStack gap="$3">
 					<YStack gap="$2">
 						<Paragraph size="$2" color="$colorMuted">
-							Contact type
+							{t('profileEditor.contactType')}
 						</Paragraph>
 						<Select
 							value={selectedContactType?.name ?? ''}
@@ -647,17 +807,17 @@ export function ProfileEditor({
 								label: option.displayName,
 								value: option.name
 							}))}
-							placeholder="Select a contact type"
+							placeholder={t('common.placeholders.contactType')}
 						/>
 					</YStack>
 					<YStack gap="$2">
 						<Paragraph size="$2" color="$colorMuted">
-							Contact value
+							{t('profileEditor.contactValue')}
 						</Paragraph>
 						<Input
 							value={newContactValue}
 							onChangeText={setNewContactValue}
-							placeholder="Enter the contact value"
+							placeholder={t('common.placeholders.contactValue')}
 						/>
 					</YStack>
 					{contactDialogError ? (
@@ -701,6 +861,7 @@ function CardFooter({
 	onCancel: () => void;
 	onSave: () => Promise<void>;
 }) {
+	const { t } = useTwyrTranslation();
 	return (
 		<XStack gap="$2">
 			<Button
@@ -709,7 +870,7 @@ function CardFooter({
 				opacity={dirty ? 1 : 0.45}
 				onPress={onCancel}
 			>
-				Cancel
+				{t('common.actions.cancel')}
 			</Button>
 			<Button
 				tone={dirty ? 'primary' : 'neutral'}
@@ -717,13 +878,14 @@ function CardFooter({
 				opacity={dirty ? 1 : 0.45}
 				onPress={() => void onSave()}
 			>
-				Save
+				{t('common.actions.save')}
 			</Button>
 		</XStack>
 	);
 }
 
 function ContactTableHeader() {
+	const { t } = useTwyrTranslation();
 	return (
 		<XStack
 			paddingHorizontal="$3"
@@ -735,22 +897,22 @@ function ContactTableHeader() {
 		>
 			<TableCell width="22%">
 				<Paragraph size="$2" fontWeight="700">
-					Type
+					{t('profileEditor.type')}
 				</Paragraph>
 			</TableCell>
 			<TableCell width="44%">
 				<Paragraph size="$2" fontWeight="700">
-					Contact
+					{t('common.labels.contacts')}
 				</Paragraph>
 			</TableCell>
 			<TableCell width="16%">
 				<Paragraph size="$2" fontWeight="700">
-					Verified
+					{t('profileEditor.verified')}
 				</Paragraph>
 			</TableCell>
 			<TableCell width="18%" alignItems="flex-end">
 				<Paragraph size="$2" fontWeight="700">
-					Actions
+					{t('common.labels.actions')}
 				</Paragraph>
 			</TableCell>
 		</XStack>
@@ -759,13 +921,16 @@ function ContactTableHeader() {
 
 function ContactTableRow({
 	contact,
+	displayTypeName,
 	onDelete,
 	onMakePrimary
 }: {
 	contact: ProfileContact;
+	displayTypeName: string;
 	onDelete: () => void;
 	onMakePrimary: () => void;
 }) {
+	const { t } = useTwyrTranslation();
 	return (
 		<XStack
 			paddingHorizontal="$3"
@@ -775,25 +940,29 @@ function ContactTableRow({
 			alignItems="center"
 		>
 			<TableCell width="22%">
-				<Text>{formatContactType(contact.typeName)}</Text>
+				<Text>{displayTypeName}</Text>
 			</TableCell>
 			<TableCell width="44%">
 				<Text>{contact.value}</Text>
 			</TableCell>
 			<TableCell width="16%">
-				<Text>{contact.verified ? 'Yes' : 'No'}</Text>
+				<Text>
+					{contact.verified
+						? t('profileEditor.yes')
+						: t('profileEditor.no')}
+				</Text>
 			</TableCell>
 			<TableCell width="18%" alignItems="flex-end">
 				<XStack gap="$1" alignItems="center">
 					{contact.isPrimary ? (
-						<Tooltip content="Primary contact">
+						<Tooltip content={t('common.tooltips.primaryContact')}>
 							<YStack>
 								<StarFilledIcon />
 							</YStack>
 						</Tooltip>
 					) : (
 						<>
-							<Tooltip content="Make primary">
+							<Tooltip content={t('common.tooltips.makePrimary')}>
 								<Button
 									chromeless
 									padding={0}
@@ -805,7 +974,9 @@ function ContactTableRow({
 									<StarIcon />
 								</Button>
 							</Tooltip>
-							<Tooltip content="Delete contact">
+							<Tooltip
+								content={t('common.tooltips.deleteContact')}
+							>
 								<Button
 									chromeless
 									padding={0}

@@ -4,6 +4,7 @@ import {
 	normalizeAppLanguage,
 	type AppLanguageCode
 } from './languages';
+import { runWithInFlightDeduplication } from './inflight-requests';
 
 export type LocaleOption = {
 	id?: string;
@@ -50,27 +51,29 @@ export async function fetchLocaleOptions(
 	endpoint: string,
 	locale: AppLanguageCode = DEFAULT_APP_LANGUAGE
 ): Promise<LocaleOption[]> {
-	try {
-		const url = new URL(endpoint, 'http://localhost');
-		url.searchParams.set('lang', normalizeAppLanguage(locale));
+	const url = new URL(endpoint, 'http://localhost');
+	url.searchParams.set('lang', normalizeAppLanguage(locale));
 
-		const response = await fetch(
-			url.origin === 'http://localhost'
-				? `${url.pathname}${url.search}`
-				: url.toString(),
-			{
+	const requestUrl =
+		url.origin === 'http://localhost'
+			? `${url.pathname}${url.search}`
+			: url.toString();
+
+	return runWithInFlightDeduplication(`GET:${requestUrl}`, async () => {
+		try {
+			const response = await fetch(requestUrl, {
 				cache: 'no-store'
-			}
-		);
+			});
 
-		if (!response.ok) {
+			if (!response.ok) {
+				return getFallbackLocaleOptions();
+			}
+
+			const payload = (await response.json()) as unknown;
+			const options = parseLocaleOptions(payload);
+			return options.length > 0 ? options : getFallbackLocaleOptions();
+		} catch {
 			return getFallbackLocaleOptions();
 		}
-
-		const payload = (await response.json()) as unknown;
-		const options = parseLocaleOptions(payload);
-		return options.length > 0 ? options : getFallbackLocaleOptions();
-	} catch {
-		return getFallbackLocaleOptions();
-	}
+	});
 }

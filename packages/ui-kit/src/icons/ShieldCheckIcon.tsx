@@ -1,11 +1,8 @@
 import { IconShieldCheck } from '@tabler/icons-react';
 
 import type { AppIconProps } from './types';
+import { useWebIconProps } from './web';
 
-export function ShieldCheckIcon({
-	color = 'currentColor',
-	size = 24,
-	stroke = 2
-}: AppIconProps) {
-	return <IconShieldCheck color={color} size={size} stroke={stroke} />;
+export function ShieldCheckIcon(props: AppIconProps) {
+	return <IconShieldCheck {...useWebIconProps(props)} />;
 }

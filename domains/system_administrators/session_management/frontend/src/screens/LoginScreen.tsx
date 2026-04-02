@@ -1,5 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { fetchCountryCodeOptions, type AppLanguageCode } from '@twyr/core';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import {
+	fetchCountryCodeOptions,
+	formatCountryCodeOptionLabel,
+	getDefaultCountryCodeValue,
+	type AppLanguageCode,
+	type CountryCodeOption
+} from '@twyr/core';
+import { useLocalizedPageRequests } from '@twyr/app-providers/src/page-requests';
+import { useTwyrTranslation } from '@twyr/i18n';
 import { Button, Card, Input, Select } from '@twyr/ui-kit';
 import { Text, XStack, YStack } from 'tamagui';
 
@@ -8,45 +16,32 @@ type LanguageOption = {
 	label: string;
 };
 
-type RegistrationDraft = {
-	phoneNumber: string;
-	otp: string;
-	firstName: string;
-	middleNames: string;
-	lastName: string;
-	email: string;
-	organization: string;
-	roleTitle: string;
-};
-
 type Props = {
 	selectedLanguage: AppLanguageCode;
 	languageOptions: LanguageOption[];
 	countryOptionsEndpoint: string;
 	requestOtp: (phoneNumber: string) => Promise<string>;
-	validateOtp: (phoneNumber: string, otp: string) => Promise<void>;
 	login: (phoneNumber: string, otp: string) => Promise<void>;
-	register: (draft: RegistrationDraft) => Promise<void>;
 	onLanguageChange: (language: AppLanguageCode) => void;
 	onLoginSuccess?: () => void;
+	headerLogo?: ReactNode;
 };
 
 type MessageTone = 'error' | 'success';
-
-const COUNTRY_CODE = '+91';
 
 export function LoginScreen({
 	selectedLanguage,
 	languageOptions,
 	countryOptionsEndpoint,
 	requestOtp,
-	validateOtp,
 	login,
-	register,
 	onLanguageChange,
-	onLoginSuccess
+	onLoginSuccess,
+	headerLogo
 }: Props) {
-	const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+	const { t } = useTwyrTranslation();
+	const { runRequest, unregisterRequest } =
+		useLocalizedPageRequests(selectedLanguage);
 	const [loginPhoneNumber, setLoginPhoneNumber] = useState('');
 	const [loginOtp, setLoginOtp] = useState('');
 	const [loginOtpRequested, setLoginOtpRequested] = useState(false);
@@ -54,19 +49,6 @@ export function LoginScreen({
 		[]
 	);
 	const [loginCountryCode, setLoginCountryCode] = useState('IN');
-	const [registrationStep, setRegistrationStep] = useState<1 | 2 | 3 | 4>(1);
-	const [registrationPhoneNumber, setRegistrationPhoneNumber] = useState('');
-	const [registrationOtp, setRegistrationOtp] = useState('');
-	const [registrationOtpRequested, setRegistrationOtpRequested] =
-		useState(false);
-	const [registrationCountryCode, setRegistrationCountryCode] =
-		useState('IN');
-	const [firstName, setFirstName] = useState('');
-	const [middleNames, setMiddleNames] = useState('');
-	const [lastName, setLastName] = useState('');
-	const [email, setEmail] = useState('');
-	const [organization, setOrganization] = useState('');
-	const [roleTitle, setRoleTitle] = useState('');
 	const [message, setMessage] = useState<{
 		tone: MessageTone;
 		text: string;
@@ -86,16 +68,10 @@ export function LoginScreen({
 
 	const loginDisabled = loginPhoneNumber.length !== 10;
 	const loginOtpDisabled = loginOtp.length !== 4;
-	const registrationPhoneDisabled = registrationPhoneNumber.length !== 10;
-	const registrationOtpDisabled = registrationOtp.length !== 4;
-	const registrationIdentityDisabled =
-		firstName.trim().length === 0 || email.trim().length === 0;
-	const registrationWorkspaceDisabled =
-		organization.trim().length === 0 || roleTitle.trim().length === 0;
 	const countrySelectOptions = useMemo(
 		() =>
 			countryOptions.map((option) => ({
-				label: `${option.country_name} (${option.iso_code})`,
+				label: formatCountryCodeOptionLabel(option),
 				value: option.iso_code
 			})),
 		[countryOptions]
@@ -103,455 +79,133 @@ export function LoginScreen({
 
 	useEffect(() => {
 		let cancelled = false;
-
-		const loadCountryCodes = async () => {
+		void runRequest('country-codes', async (locale) => {
 			const options = await fetchCountryCodeOptions(
 				countryOptionsEndpoint,
-				selectedLanguage
+				locale
 			);
 			if (cancelled || options.length === 0) {
 				return;
 			}
 
 			setCountryOptions(options);
-			if (options.some((option) => option.iso_code === 'IN')) {
-				setLoginCountryCode('IN');
-				setRegistrationCountryCode('IN');
-				return;
-			}
-
-			setLoginCountryCode(options[0].iso_code);
-			setRegistrationCountryCode(options[0].iso_code);
-		};
-
-		void loadCountryCodes();
+			setLoginCountryCode(getDefaultCountryCodeValue(options));
+		});
 
 		return () => {
 			cancelled = true;
+			unregisterRequest('country-codes');
 		};
-	}, [countryOptionsEndpoint, selectedLanguage]);
+	}, [countryOptionsEndpoint, runRequest, unregisterRequest]);
 
 	return (
 		<YStack flex={1} justifyContent="center" padding="$5">
 			<YStack maxWidth={760} width="100%" alignSelf="center" gap="$5">
 				<Card>
-					<YStack gap="$4">
-						<XStack gap="$3" flexWrap="wrap">
-							<Button
-								tone={
-									activeTab === 'login'
-										? 'primary'
-										: 'neutral'
-								}
-								onPress={() => {
-									setActiveTab('login');
-									resetMessage();
-								}}
-							>
-								Login
-							</Button>
-							<Button
-								tone={
-									activeTab === 'register'
-										? 'primary'
-										: 'neutral'
-								}
-								onPress={() => {
-									setActiveTab('register');
-									resetMessage();
-								}}
-							>
-								Register
+					<YStack gap="$3">
+						<XStack
+							alignItems="center"
+							backgroundColor="rgba(2, 6, 23, 0.7)"
+							borderBottomColor="rgba(255, 255, 255, 0.05)"
+							borderBottomWidth={1}
+							borderRadius="$3"
+							flexWrap="wrap"
+							gap="$3"
+							justifyContent="space-between"
+							paddingHorizontal="$3"
+							paddingVertical="$2"
+						>
+							{headerLogo ?? null}
+							<Button tone="primary" onPress={resetMessage}>
+								{t('common.actions.login')}
 							</Button>
 						</XStack>
 
-						{activeTab === 'login' ? (
-							<YStack gap="$4">
-								<Text fontSize="$8" fontWeight="700">
-									Administrator login
-								</Text>
-								<Select
-									value={selectedLanguage}
-									onValueChange={(value) =>
-										onLanguageChange(
-											value as AppLanguageCode
-										)
-									}
-									options={languageOptions.map((option) => ({
-										label: option.label,
-										value: option.code
-									}))}
-									placeholder="Select language"
-								/>
-								<PhoneNumberRow
-									countryCode={loginCountryCode}
-									onCountryCodeChange={setLoginCountryCode}
-									countrySelectOptions={countrySelectOptions}
-									phoneNumber={loginPhoneNumber}
-									onPhoneNumberChange={(value) => {
-										setLoginPhoneNumber(
-											value
-												.replace(/\D/g, '')
-												.slice(0, 10)
+						<YStack gap="$4">
+							<Select
+								value={selectedLanguage}
+								onValueChange={(value) =>
+									onLanguageChange(value as AppLanguageCode)
+								}
+								options={languageOptions.map((option) => ({
+									label: option.label,
+									value: option.code
+								}))}
+								placeholder={t('common.placeholders.language')}
+							/>
+							<PhoneNumberRow
+								countryCode={loginCountryCode}
+								onCountryCodeChange={setLoginCountryCode}
+								countrySelectOptions={countrySelectOptions}
+								phoneNumber={loginPhoneNumber}
+								onPhoneNumberChange={(value) => {
+									setLoginPhoneNumber(
+										value.replace(/\D/g, '').slice(0, 10)
+									);
+									setLoginOtpRequested(false);
+									setLoginOtp('');
+									resetMessage();
+								}}
+							/>
+							{loginOtpRequested ? (
+								<Input
+									placeholder={t('common.placeholders.otp')}
+									value={loginOtp}
+									onChangeText={(value) => {
+										setLoginOtp(
+											value.replace(/\D/g, '').slice(0, 4)
 										);
-										setLoginOtpRequested(false);
-										setLoginOtp('');
 										resetMessage();
 									}}
+									keyboardType="number-pad"
 								/>
-								{loginOtpRequested ? (
-									<Input
-										placeholder="Enter OTP"
-										value={loginOtp}
-										onChangeText={(value) => {
-											setLoginOtp(
-												value
-													.replace(/\D/g, '')
-													.slice(0, 4)
-											);
-											resetMessage();
-										}}
-										keyboardType="number-pad"
-									/>
-								) : null}
-								<Button
-									tone="accent"
-									onPress={async () => {
-										try {
-											if (!loginOtpRequested) {
-												const otp =
-													await requestOtp(
-														loginPhoneNumber
-													);
-												setLoginOtpRequested(true);
-												showSuccess(
-													otp ||
-														`OTP sent for ${loginCountryCode} ${COUNTRY_CODE} ${loginPhoneNumber}.`
+							) : null}
+							<Button
+								tone="accent"
+								onPress={async () => {
+									try {
+										if (!loginOtpRequested) {
+											const otp =
+												await requestOtp(
+													loginPhoneNumber
 												);
-												return;
-											}
-
-											await login(
-												loginPhoneNumber,
-												loginOtp
-											);
+											setLoginOtpRequested(true);
 											showSuccess(
-												'Administrator session started.'
+												otp ||
+													t('adminLogin.otpSent', {
+														countryCode:
+															loginCountryCode,
+														phoneNumber:
+															loginPhoneNumber
+													})
 											);
-											onLoginSuccess?.();
-										} catch (error) {
-											showError(
-												error instanceof Error
-													? error.message
-													: 'Unable to complete administrator login.'
-											);
+											return;
 										}
-									}}
-									disabled={
-										loginOtpRequested
-											? loginOtpDisabled
-											: loginDisabled
+
+										await login(loginPhoneNumber, loginOtp);
+										showSuccess(
+											t('adminLogin.sessionStarted')
+										);
+										onLoginSuccess?.();
+									} catch (error) {
+										showError(
+											error instanceof Error
+												? error.message
+												: t('adminLogin.loginFailed')
+										);
 									}
-								>
-									{loginOtpRequested
-										? 'Login'
-										: 'Generate OTP'}
-								</Button>
-							</YStack>
-						) : (
-							<YStack gap="$4">
-								<Text fontSize="$8" fontWeight="700">
-									Administrator registration
-								</Text>
-								<Text color="$colorHover">
-									Step {registrationStep} of 4
-								</Text>
-
-								{registrationStep === 1 ? (
-									<YStack gap="$4">
-										<Select
-											value={selectedLanguage}
-											onValueChange={(value) =>
-												onLanguageChange(
-													value as AppLanguageCode
-												)
-											}
-											options={languageOptions.map(
-												(option) => ({
-													label: option.label,
-													value: option.code
-												})
-											)}
-											placeholder="Select language"
-										/>
-										<Select
-											value={registrationCountryCode}
-											onValueChange={
-												setRegistrationCountryCode
-											}
-											options={countrySelectOptions}
-											placeholder="Select country"
-										/>
-										<Input
-											placeholder="Mobile number"
-											value={registrationPhoneNumber}
-											onChangeText={(value) => {
-												setRegistrationPhoneNumber(
-													value
-														.replace(/\D/g, '')
-														.slice(0, 10)
-												);
-												setRegistrationOtpRequested(
-													false
-												);
-												setRegistrationOtp('');
-												resetMessage();
-											}}
-											keyboardType="number-pad"
-										/>
-										{registrationOtpRequested ? (
-											<Input
-												placeholder="Validate OTP"
-												value={registrationOtp}
-												onChangeText={(value) => {
-													setRegistrationOtp(
-														value
-															.replace(/\D/g, '')
-															.slice(0, 4)
-													);
-													resetMessage();
-												}}
-												keyboardType="number-pad"
-											/>
-										) : null}
-										<Button
-											tone="accent"
-											onPress={async () => {
-												try {
-													if (
-														!registrationOtpRequested
-													) {
-														const otp =
-															await requestOtp(
-																registrationPhoneNumber
-															);
-														setRegistrationOtpRequested(
-															true
-														);
-														showSuccess(
-															otp ||
-																`OTP sent for ${registrationCountryCode} ${COUNTRY_CODE} ${registrationPhoneNumber}.`
-														);
-														return;
-													}
-
-													if (
-														registrationOtpDisabled
-													) {
-														return;
-													}
-
-													await validateOtp(
-														registrationPhoneNumber,
-														registrationOtp
-													);
-													setRegistrationStep(2);
-													showSuccess(
-														'OTP verified. Continue with operator details.'
-													);
-												} catch (error) {
-													showError(
-														error instanceof Error
-															? error.message
-															: 'Unable to validate OTP.'
-													);
-												}
-											}}
-											disabled={
-												registrationOtpRequested
-													? registrationOtpDisabled
-													: registrationPhoneDisabled
-											}
-										>
-											{registrationOtpRequested
-												? 'Validate OTP'
-												: 'Generate OTP'}
-										</Button>
-									</YStack>
-								) : null}
-
-								{registrationStep === 2 ? (
-									<YStack gap="$4">
-										<Input
-											placeholder="First name"
-											value={firstName}
-											onChangeText={setFirstName}
-										/>
-										<Input
-											placeholder="Middle names"
-											value={middleNames}
-											onChangeText={setMiddleNames}
-										/>
-										<Input
-											placeholder="Last name"
-											value={lastName}
-											onChangeText={setLastName}
-										/>
-										<Input
-											placeholder="Work email address"
-											value={email}
-											onChangeText={setEmail}
-										/>
-										<XStack gap="$3">
-											<Button
-												tone="neutral"
-												onPress={() =>
-													setRegistrationStep(1)
-												}
-											>
-												Back
-											</Button>
-											<Button
-												tone="accent"
-												onPress={() =>
-													setRegistrationStep(3)
-												}
-												disabled={
-													registrationIdentityDisabled
-												}
-											>
-												Continue
-											</Button>
-										</XStack>
-									</YStack>
-								) : null}
-
-								{registrationStep === 3 ? (
-									<YStack gap="$4">
-										<Input
-											placeholder="Business unit"
-											value={organization}
-											onChangeText={setOrganization}
-										/>
-										<Input
-											placeholder="Privilege scope"
-											value={roleTitle}
-											onChangeText={setRoleTitle}
-										/>
-										<XStack gap="$3">
-											<Button
-												tone="neutral"
-												onPress={() =>
-													setRegistrationStep(2)
-												}
-											>
-												Back
-											</Button>
-											<Button
-												tone="accent"
-												onPress={() =>
-													setRegistrationStep(4)
-												}
-												disabled={
-													registrationWorkspaceDisabled
-												}
-											>
-												Review
-											</Button>
-										</XStack>
-									</YStack>
-								) : null}
-
-								{registrationStep === 4 ? (
-									<YStack gap="$4">
-										<Card
-											title="Review"
-											description="Confirm the operational profile before activating the administrator account."
-										>
-											<YStack gap="$2">
-												<Text color="$colorHover">
-													Language: {selectedLanguage}
-												</Text>
-												<Text color="$colorHover">
-													Country:{' '}
-													{registrationCountryCode}
-												</Text>
-												<Text color="$colorHover">
-													Phone: {COUNTRY_CODE}{' '}
-													{registrationPhoneNumber}
-												</Text>
-												<Text color="$colorHover">
-													Name:{' '}
-													{[
-														firstName,
-														middleNames,
-														lastName
-													]
-														.filter(Boolean)
-														.join(' ')}
-												</Text>
-												<Text color="$colorHover">
-													Email: {email}
-												</Text>
-												<Text color="$colorHover">
-													Business unit:{' '}
-													{organization}
-												</Text>
-												<Text color="$colorHover">
-													Privilege scope: {roleTitle}
-												</Text>
-											</YStack>
-										</Card>
-										<XStack gap="$3">
-											<Button
-												tone="neutral"
-												onPress={() =>
-													setRegistrationStep(3)
-												}
-											>
-												Back
-											</Button>
-											<Button
-												tone="accent"
-												onPress={async () => {
-													try {
-														await register({
-															phoneNumber:
-																registrationPhoneNumber,
-															otp: registrationOtp,
-															firstName,
-															middleNames,
-															lastName,
-															email,
-															organization,
-															roleTitle
-														});
-														setActiveTab('login');
-														setRegistrationStep(1);
-														setRegistrationOtpRequested(
-															false
-														);
-														setRegistrationOtp('');
-														showSuccess(
-															'Administrator profile created. Use the login tab to continue.'
-														);
-													} catch (error) {
-														showError(
-															error instanceof
-																Error
-																? error.message
-																: 'Unable to create the administrator profile.'
-														);
-													}
-												}}
-											>
-												Create profile
-											</Button>
-										</XStack>
-									</YStack>
-								) : null}
-							</YStack>
-						)}
+								}}
+								disabled={
+									loginOtpRequested
+										? loginOtpDisabled
+										: loginDisabled
+								}
+							>
+								{loginOtpRequested
+									? t('common.actions.login')
+									: t('common.actions.generateOtp')}
+							</Button>
+						</YStack>
 
 						{message ? (
 							<Text
@@ -584,29 +238,25 @@ function PhoneNumberRow({
 	phoneNumber: string;
 	onPhoneNumberChange: (value: string) => void;
 }) {
+	const { t } = useTwyrTranslation();
 	return (
-		<XStack gap="$3" flexWrap="wrap" alignItems="flex-start">
-			<YStack width={220} flexShrink={0} $sm={{ width: '100%' }}>
+		<YStack gap="$3" width="100%">
+			<YStack width="100%">
 				<Select
 					value={countryCode}
 					onValueChange={onCountryCodeChange}
 					options={countrySelectOptions}
-					placeholder="Select country"
+					placeholder={t('common.placeholders.country')}
 				/>
 			</YStack>
-			<YStack flex={1} minWidth={220} $sm={{ width: '100%', flex: 0 }}>
+			<YStack width="100%">
 				<Input
-					placeholder="Mobile number"
+					placeholder={t('common.placeholders.mobileNumber')}
 					value={phoneNumber}
 					onChangeText={onPhoneNumberChange}
 					keyboardType="number-pad"
 				/>
 			</YStack>
-		</XStack>
+		</YStack>
 	);
 }
-
-type CountryCodeOption = {
-	iso_code: string;
-	country_name: string;
-};

@@ -18,6 +18,7 @@ import {
 	type AppLanguageCode
 } from '@twyr/core';
 import { tamaguiConfig } from '@twyr/design-system';
+import { TwyrI18nProvider, setTwyrLocale } from '@twyr/i18n';
 import { type MobileThemeMode } from '@twyr/ui-kit';
 import {
 	completeLogin,
@@ -34,6 +35,7 @@ import {
 	updateActorProfile,
 	updateActorSidebar,
 	setActorAuthenticated,
+	setActorSkipNextProfileFetch,
 	setActorSessionResolved,
 	normalizeExperienceLanguageOptions
 } from './experience-state';
@@ -69,11 +71,19 @@ type MobilePortalContextValue = {
 		actor: ExperienceActor,
 		sessionResolved: boolean
 	) => void;
+	setSkipNextProfileFetch: (
+		actor: ExperienceActor,
+		skipNextProfileFetch: boolean
+	) => void;
 };
 
 const MobilePortalContext = createContext<MobilePortalContextValue | null>(
 	null
 );
+
+function syncMobileLanguage(language: AppLanguageCode) {
+	void setTwyrLocale(language);
+}
 
 export function useMobileThemeMode() {
 	const value = useContext(MobileThemeContext);
@@ -118,7 +128,9 @@ export function useMobilePortalExperience(actor: ExperienceActor) {
 			setAuthenticated: (authenticated: boolean) =>
 				value.setAuthenticated(actor, authenticated),
 			setSessionResolved: (sessionResolved: boolean) =>
-				value.setSessionResolved(actor, sessionResolved)
+				value.setSessionResolved(actor, sessionResolved),
+			setSkipNextProfileFetch: (skipNextProfileFetch: boolean) =>
+				value.setSkipNextProfileFetch(actor, skipNextProfileFetch)
 		}),
 		[actor, value]
 	);
@@ -148,6 +160,15 @@ export function TwyrMobileProviders({
 
 		return systemScheme === 'dark' ? 'dark' : 'light';
 	}, [systemScheme, themeMode]);
+
+	useEffect(() => {
+		// eslint-disable-next-line security/detect-object-injection
+		syncMobileLanguage(experienceState[languageActor].language);
+	}, [
+		// eslint-disable-next-line security/detect-object-injection
+		experienceState[languageActor].language,
+		languageActor
+	]);
 
 	useEffect(() => {
 		if (!languageOptionsEndpoint) {
@@ -225,8 +246,10 @@ export function TwyrMobileProviders({
 
 	const setLanguage = useCallback(
 		(actor: ExperienceActor, language: AppLanguageCode) => {
+			const normalizedLanguage = normalizeAppLanguage(language);
+			syncMobileLanguage(normalizedLanguage);
 			setExperienceState((currentState) =>
-				updateActorLanguage(currentState, actor, language)
+				updateActorLanguage(currentState, actor, normalizedLanguage)
 			);
 		},
 		[]
@@ -268,37 +291,58 @@ export function TwyrMobileProviders({
 		[]
 	);
 
+	const setSkipNextProfileFetch = useCallback(
+		(actor: ExperienceActor, skipNextProfileFetch: boolean) => {
+			setExperienceState((currentState) =>
+				setActorSkipNextProfileFetch(
+					currentState,
+					actor,
+					skipNextProfileFetch
+				)
+			);
+		},
+		[]
+	);
+
 	return (
-		<MobileThemeContext.Provider
-			value={{ themeMode, setThemeMode, resolvedTheme }}
+		<TwyrI18nProvider
+			locale={
+				// eslint-disable-next-line security/detect-object-injection
+				experienceState[languageActor].language
+			}
 		>
-			<MobilePortalContext.Provider
-				value={{
-					state: experienceState,
-					languageOptions,
-					requestOtp,
-					login,
-					register,
-					logout,
-					setLanguage,
-					setSidebarCollapsed,
-					updateProfile,
-					setAuthenticated,
-					setSessionResolved
-				}}
+			<MobileThemeContext.Provider
+				value={{ themeMode, setThemeMode, resolvedTheme }}
 			>
-				<TamaguiProvider
-					key={resolvedTheme}
-					config={tamaguiConfig}
-					defaultTheme={resolvedTheme}
+				<MobilePortalContext.Provider
+					value={{
+						state: experienceState,
+						languageOptions,
+						requestOtp,
+						login,
+						register,
+						logout,
+						setLanguage,
+						setSidebarCollapsed,
+						updateProfile,
+						setAuthenticated,
+						setSessionResolved,
+						setSkipNextProfileFetch
+					}}
 				>
-					<Theme key={resolvedTheme} name={resolvedTheme}>
-						<ToastProvider>
-							<YStack flex={1}>{children}</YStack>
-						</ToastProvider>
-					</Theme>
-				</TamaguiProvider>
-			</MobilePortalContext.Provider>
-		</MobileThemeContext.Provider>
+					<TamaguiProvider
+						key={resolvedTheme}
+						config={tamaguiConfig}
+						defaultTheme={resolvedTheme}
+					>
+						<Theme key={resolvedTheme} name={resolvedTheme}>
+							<ToastProvider>
+								<YStack flex={1}>{children}</YStack>
+							</ToastProvider>
+						</Theme>
+					</TamaguiProvider>
+				</MobilePortalContext.Provider>
+			</MobileThemeContext.Provider>
+		</TwyrI18nProvider>
 	);
 }

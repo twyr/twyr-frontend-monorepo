@@ -13,6 +13,7 @@
 		"paths": {
 			"@twyr/app-providers": ["packages/app-providers/src"],
 			"@twyr/design-system": ["packages/design-system/src"],
+			"@twyr/i18n": ["packages/i18n/src"],
 			"@twyr/ui-kit": ["packages/ui-kit/src"],
 			"@twyr/ui-composed": ["packages/ui-composed/src"],
 			"@twyr/core": ["packages/core/src"],

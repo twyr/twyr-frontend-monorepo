@@ -1,3 +1,9 @@
+html,
+body {
+	min-height: 100%;
+	margin: 0;
+}
+
 ._ovs-contain {
 	overscroll-behavior: contain;
 }
@@ -637,6 +643,55 @@
 		--danger: $red500;
 		--overlay: rgba(2, 6, 23, 0.7);
 		--shadowColor: rgba(0, 0, 0, 0.4);
+	}
+}
+
+.system-admin-public-page {
+	align-items: stretch;
+	background:
+		linear-gradient(
+			90deg,
+			rgba(2, 6, 23, 0.18) 0%,
+			rgba(2, 6, 23, 0.08) 46%,
+			rgba(2, 6, 23, 0.72) 100%
+		),
+		url('/auth/public-page-background.png') center center / cover no-repeat;
+	box-sizing: border-box;
+	display: flex;
+	height: 100dvh;
+	justify-content: flex-end;
+	min-height: 0;
+	overflow: hidden;
+	padding: 32px;
+	position: fixed;
+	inset: 0;
+}
+
+.system-admin-public-page__panel {
+	align-items: center;
+	backdrop-filter: blur(14px);
+	background: rgba(255, 255, 255, 0.14);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 28px;
+	box-sizing: border-box;
+	box-shadow: 0 32px 80px rgba(15, 23, 42, 0.28);
+	display: flex;
+	max-height: calc(100dvh - 64px);
+	min-height: 0;
+	overflow: auto;
+	width: clamp(320px, 25vw, 420px);
+}
+
+@media (max-width: 900px) {
+	.system-admin-public-page {
+		align-items: center;
+		padding: 20px;
+	}
+
+	.system-admin-public-page__panel {
+		background: rgba(255, 255, 255, 0.2);
+		max-height: calc(100dvh - 40px);
+		width: min(100%, 480px);
 	}
 }
 :root.t_dark .t_light,

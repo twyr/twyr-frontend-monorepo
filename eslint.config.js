@@ -134,7 +134,7 @@ export default [
 		},
 		rules: {
 			'mocha/no-exclusive-tests': 'error',
-			'mocha/no-skipped-tests': 'warn',
+			'mocha/no-pending-tests': 'warn',
 			'mocha/no-mocha-arrows': 'off',
 			'mocha/max-top-level-suites': ['warn', { limit: 1 }]
 		}
@@ -161,6 +161,16 @@ export default [
 			'jsonc/quote-props': ['error', 'always'],
 			'jsonc/sort-keys': 'off',
 			'prettier/prettier': 'error'
+		}
+	},
+
+	/* --------------------------------------------------
+	 * Locale resource files
+	 * -------------------------------------------------- */
+	{
+		files: ['packages/i18n/src/resources/*.ts'],
+		rules: {
+			'unicorn/filename-case': 'off'
 		}
 	},
 

@@ -3,6 +3,7 @@ import {
 	normalizeAppLanguage,
 	type AppLanguageCode
 } from './languages';
+import { runWithInFlightDeduplication } from './inflight-requests';
 
 export type ContactTypeOption = {
 	id?: string;
@@ -74,26 +75,28 @@ export async function fetchContactTypeOptions(
 	endpoint: string,
 	locale: AppLanguageCode = DEFAULT_APP_LANGUAGE
 ): Promise<ContactTypeOption[]> {
-	try {
-		const url = new URL(endpoint, 'http://localhost');
-		url.searchParams.set('lang', normalizeAppLanguage(locale));
+	const url = new URL(endpoint, 'http://localhost');
+	url.searchParams.set('lang', normalizeAppLanguage(locale));
 
-		const response = await fetch(
-			url.origin === 'http://localhost'
-				? `${url.pathname}${url.search}`
-				: url.toString(),
-			{
+	const requestUrl =
+		url.origin === 'http://localhost'
+			? `${url.pathname}${url.search}`
+			: url.toString();
+
+	return runWithInFlightDeduplication(`GET:${requestUrl}`, async () => {
+		try {
+			const response = await fetch(requestUrl, {
 				cache: 'no-store',
 				credentials: 'include'
-			}
-		);
+			});
 
-		if (!response.ok) {
+			if (!response.ok) {
+				return [];
+			}
+
+			return parseContactTypeOptions((await response.json()) as unknown);
+		} catch {
 			return [];
 		}
-
-		return parseContactTypeOptions((await response.json()) as unknown);
-	} catch {
-		return [];
-	}
+	});
 }

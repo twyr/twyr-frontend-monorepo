@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
 const shutdownSignals = ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGQUIT'];
@@ -28,10 +29,90 @@ const child = spawn(turboBinary, turboArgs, {
 
 let shutdownRequested = false;
 
+function getProcessSnapshot() {
+	try {
+		return execFileSync('ps', ['-eo', 'pid=,ppid='], {
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore']
+		});
+	} catch {
+		return '';
+	}
+}
+
+function getDescendantPids(rootPid) {
+	if (!rootPid) {
+		return [];
+	}
+
+	const processSnapshot = getProcessSnapshot();
+
+	if (!processSnapshot) {
+		return [];
+	}
+
+	const parentToChildren = new Map();
+
+	for (const line of processSnapshot.split('\n')) {
+		const [pidValue, ppidValue] = line
+			.trim()
+			.split(/\s+/)
+			.map((value) => Number.parseInt(value, 10));
+
+		if (!Number.isInteger(pidValue) || !Number.isInteger(ppidValue)) {
+			continue;
+		}
+
+		const childPids = parentToChildren.get(ppidValue) ?? [];
+		childPids.push(pidValue);
+		parentToChildren.set(ppidValue, childPids);
+	}
+
+	const descendantPids = [];
+	const pendingParentPids = [...(parentToChildren.get(rootPid) ?? [])];
+
+	while (pendingParentPids.length > 0) {
+		const childPid = pendingParentPids.pop();
+
+		if (!childPid) {
+			continue;
+		}
+
+		descendantPids.push(childPid);
+		pendingParentPids.push(...(parentToChildren.get(childPid) ?? []));
+	}
+
+	return descendantPids;
+}
+
+function signalPid(pid, signal) {
+	try {
+		process.kill(pid, signal);
+	} catch (error) {
+		if (error && error.code !== 'ESRCH') {
+			console.error(error);
+		}
+	}
+}
+
+function terminateDescendants(signal) {
+	if (process.platform === 'win32' || !child.pid) {
+		return;
+	}
+
+	const descendantPids = getDescendantPids(child.pid);
+
+	for (const descendantPid of descendantPids.reverse()) {
+		signalPid(descendantPid, signal);
+	}
+}
+
 function terminateChild(signal) {
 	if (child.killed) {
 		return;
 	}
+
+	terminateDescendants(signal);
 
 	if (process.platform !== 'win32' && child.pid) {
 		try {
@@ -64,6 +145,10 @@ child.on('error', (error) => {
 });
 
 child.on('exit', (code, signal) => {
+	if (shutdownRequested) {
+		terminateDescendants('SIGKILL');
+	}
+
 	if (
 		(shutdownRequested && signal === 'SIGKILL') ||
 		shutdownSignals.includes(signal) ||

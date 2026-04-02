@@ -1,5 +1,6 @@
 export * from './ArrowRightIcon';
 export * from './BoltIcon';
+export * from './CalendarIcon';
 export * from './ChevronDownIcon';
 export * from './DeviceDesktopIcon';
 export * from './GlobeIcon';

@@ -1,11 +1,8 @@
 import { IconGlobe } from '@tabler/icons-react';
 
 import type { AppIconProps } from './types';
+import { useWebIconProps } from './web';
 
-export function GlobeIcon({
-	color = 'currentColor',
-	size = 24,
-	stroke = 2
-}: AppIconProps) {
-	return <IconGlobe color={color} size={size} stroke={stroke} />;
+export function GlobeIcon(props: AppIconProps) {
+	return <IconGlobe {...useWebIconProps(props)} />;
 }

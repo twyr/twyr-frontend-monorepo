@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	createPortalApiClient,
+	normalizeAppLanguage,
 	type PortalProfileInput,
 	withLanguageQuery
 } from '@twyr/core';
+import { useLocalizedPageRequests } from '@twyr/app-providers/src/page-requests';
 import { useWebPortalExperience } from '@twyr/app-providers/src/web';
+import { useTwyrTranslation } from '@twyr/i18n';
 import { UserWebShell } from '@twyr/app-shells/src/web/UserWebShell';
 import { ProfileScreen } from '@twyr/users-profile-frontend/src/screens/ProfileScreen';
 import { LoginScreen } from '@twyr/users-session-management-frontend/src/screens/LoginScreen';
@@ -20,6 +23,7 @@ type Props = {
 };
 
 export function UsersPortal({ view, serverAuthenticated }: Props) {
+	const { t } = useTwyrTranslation();
 	const router = useRouter();
 	const experience = useWebPortalExperience('users');
 	const {
@@ -28,10 +32,16 @@ export function UsersPortal({ view, serverAuthenticated }: Props) {
 		setAuthenticated,
 		setLanguage,
 		setSessionResolved,
+		setSkipNextProfileFetch,
 		updateProfile,
 		logout
 	} = experience;
+	const { runRequest, unregisterRequest } = useLocalizedPageRequests(
+		state.language
+	);
 	const [profileError, setProfileError] = useState<string | null>(null);
+	const [hasHydrated, setHasHydrated] = useState(false);
+	const logoutInProgressRef = useRef(false);
 	const countryOptionsEndpoint = withLanguageQuery(
 		'/api/v1/masterdata/country-codes',
 		state.language
@@ -47,95 +57,172 @@ export function UsersPortal({ view, serverAuthenticated }: Props) {
 	);
 
 	useEffect(() => {
+		setHasHydrated(true);
+	}, []);
+
+	useEffect(() => {
 		setAuthenticated(serverAuthenticated);
 		setSessionResolved(true);
 	}, [serverAuthenticated, setAuthenticated, setSessionResolved]);
 
-	const syncProfile = async () => {
+	const applyProfile = (
+		profile: PortalProfileInput,
+		syncPrimaryLocale = false
+	) => {
+		updateProfile(profile);
+
+		if (!syncPrimaryLocale) {
+			return;
+		}
+
+		const primaryLocale =
+			profile.locales.find((locale) => locale.isPrimary)?.localeCode ??
+			profile.locales.find((locale) => locale.isPrimary)?.localeId;
+
+		if (primaryLocale && primaryLocale !== state.language) {
+			setLanguage(normalizeAppLanguage(primaryLocale));
+		}
+	};
+
+	const syncProfile = async (syncPrimaryLocale = false) => {
 		const profile = await api.fetchProfile(
 			state.profile as PortalProfileInput,
 			state.language
 		);
 
-		updateProfile(profile);
+		applyProfile(profile, syncPrimaryLocale);
+		return profile;
 	};
 
 	useEffect(() => {
-		if (!state.authenticated) {
+		if (
+			logoutInProgressRef.current ||
+			!state.authenticated ||
+			view !== 'profile'
+		) {
+			unregisterRequest('profile');
+			return;
+		}
+
+		if (state.skipNextProfileFetch) {
+			setSkipNextProfileFetch(false);
+			unregisterRequest('profile');
 			return;
 		}
 
 		let cancelled = false;
 
-		void api
-			.fetchProfile(state.profile as PortalProfileInput, state.language)
-			.then((profile) => {
+		void runRequest('profile', async (locale) => {
+			try {
+				const profile = await api.fetchProfile(
+					state.profile as PortalProfileInput,
+					locale
+				);
 				if (cancelled) {
 					return;
 				}
 
-				updateProfile(profile);
+				applyProfile(profile);
 				setProfileError(null);
-			})
-			.catch((error) => {
+			} catch (error) {
 				if (!cancelled) {
 					setProfileError(
 						error instanceof Error
 							? error.message
-							: 'Unable to load the profile.'
+							: t('common.messages.profileLoadedFailed')
 					);
 				}
-			});
+			}
+		});
 
 		return () => {
 			cancelled = true;
+			unregisterRequest('profile');
 		};
 	}, [
 		api,
+		runRequest,
 		state.authenticated,
-		state.language,
-		state.profile,
+		state.skipNextProfileFetch,
+		view,
+		setSkipNextProfileFetch,
+		setLanguage,
+		t,
+		unregisterRequest,
 		updateProfile
 	]);
 
-	if (!serverAuthenticated) {
+	if (!serverAuthenticated && !state.authenticated) {
 		return (
-			<LoginScreen
-				selectedLanguage={state.language}
-				languageOptions={languageOptions}
-				countryOptionsEndpoint={countryOptionsEndpoint}
-				requestOtp={(phoneNumber) =>
-					api.requestOtp(phoneNumber, state.language)
-				}
-				validateOtp={(phoneNumber, otp) =>
-					api.validateOtp(phoneNumber, otp, state.language)
-				}
-				login={async (phoneNumber, otp) => {
-					await api.login(phoneNumber, otp, state.language);
-					updateProfile({
-						contacts: [
-							{
-								typeName: 'mobile',
-								value: phoneNumber,
-								verified: false,
-								isPrimary: true
+			<div className="users-public-page">
+				<div className="users-public-page__panel">
+					{hasHydrated ? (
+						<LoginScreen
+							selectedLanguage={state.language}
+							languageOptions={languageOptions}
+							countryOptionsEndpoint={countryOptionsEndpoint}
+							gendersEndpoint="/api/v1/masterdata/genders"
+							requestOtp={(phoneNumber) =>
+								api.requestOtp(phoneNumber, state.language)
 							}
-						]
-					});
-					setAuthenticated(true);
-				}}
-				register={(draft) => api.register(draft, state.language)}
-				onLanguageChange={setLanguage}
-				onLoginSuccess={() => {
-					router.push('/');
-				}}
-			/>
+							validateOtp={(phoneNumber, otp) =>
+								api.validateOtp(
+									phoneNumber,
+									otp,
+									state.language
+								)
+							}
+							login={async (phoneNumber, otp) => {
+								const loginResult = await api.login(
+									phoneNumber,
+									otp,
+									state.language
+								);
+								logoutInProgressRef.current = false;
+								setSkipNextProfileFetch(true);
+								setAuthenticated(true);
+								if (loginResult.primaryLocale) {
+									setLanguage(loginResult.primaryLocale);
+								}
+							}}
+							register={(draft) =>
+								api.register(draft, state.language)
+							}
+							headerLogo={
+								<img
+									alt={t('common.appName')}
+									src="/auth/public-page-logo.png"
+									style={{
+										height: 36,
+										objectFit: 'contain'
+									}}
+								/>
+							}
+							onLanguageChange={setLanguage}
+							onLoginSuccess={() => {
+								router.push('/');
+							}}
+						/>
+					) : null}
+				</div>
+			</div>
 		);
 	}
 
 	return (
 		<UserWebShell
+			headerBrand={
+				<img
+					alt={t('common.appName')}
+					src="/auth/public-page-logo.png"
+					style={{
+						height: 36,
+						objectFit: 'contain'
+					}}
+				/>
+			}
 			onLogout={async () => {
+				logoutInProgressRef.current = true;
 				await api.logout(state.language);
 				logout();
 				router.push('/session-management');
@@ -147,6 +234,7 @@ export function UsersPortal({ view, serverAuthenticated }: Props) {
 					language={state.language}
 					languageOptions={languageOptions}
 					contactTypesEndpoint="/api/v1/masterdata/contact-types"
+					gendersEndpoint="/api/v1/masterdata/genders"
 					onLanguageChange={setLanguage}
 					onAddContact={async (contact) => {
 						await api.createProfileContact(
@@ -201,7 +289,7 @@ export function UsersPortal({ view, serverAuthenticated }: Props) {
 					}}
 					onMakePrimaryLocale={async (locale) => {
 						await api.updateProfileLocale(locale, state.language);
-						await syncProfile();
+						await syncProfile(true);
 						return api.fetchProfile(
 							state.profile as PortalProfileInput,
 							state.language
@@ -239,18 +327,19 @@ function UsersDashboard({
 	view: 'dashboard' | 'session-management';
 	profileError: string | null;
 }) {
+	const { t } = useTwyrTranslation();
 	return (
 		<YStack gap="$5">
 			<YStack gap="$2">
 				<Text fontSize="$10" fontWeight="700" color="$color">
 					{view === 'dashboard'
-						? 'User dashboard'
-						: 'Session management'}
+						? t('userDashboard.title')
+						: t('userDashboard.sessionManagement')}
 				</Text>
 				<Text color="$colorHover">
 					{view === 'dashboard'
-						? 'Authenticated user workspace with the same sidebar and profile structure as the reference app.'
-						: 'You are signed in. Continue from the dashboard or update the profile from the authenticated shell.'}
+						? t('userDashboard.dashboardDescription')
+						: t('userDashboard.sessionDescription')}
 				</Text>
 				{profileError ? (
 					<Text color="$error">{profileError}</Text>
@@ -258,12 +347,12 @@ function UsersDashboard({
 			</YStack>
 			<XStack gap="$4" flexWrap="wrap">
 				<Card
-					title="Workspace"
-					description="Collapsible sidebar, language selector, and profile access are active."
+					title={t('common.labels.workspace')}
+					description={t('userDashboard.workspaceDescription')}
 				/>
 				<Card
-					title="Profile"
-					description="Identity and language preferences are editable post-login."
+					title={t('common.actions.profile')}
+					description={t('userDashboard.profileDescription')}
 				/>
 			</XStack>
 		</YStack>
