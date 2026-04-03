@@ -1,16 +1,10 @@
+/* eslint-disable n/no-process-exit */
+
 import { spawn } from 'node:child_process';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
 const shutdownSignals = ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGQUIT'];
-
-function getForwardedSignal(signal) {
-	if (signal === 'SIGINT' || signal === 'SIGHUP' || signal === 'SIGQUIT') {
-		return 'SIGTERM';
-	}
-
-	return signal;
-}
 
 const turboBinary = join(
 	process.cwd(),
@@ -22,12 +16,16 @@ const turboBinary = join(
 const turboArgs = process.argv.slice(2);
 
 const child = spawn(turboBinary, turboArgs, {
-	stdio: 'inherit',
+	stdio: ['inherit', 'inherit', 'pipe'],
 	env: process.env,
 	detached: process.platform !== 'win32'
 });
 
 let shutdownRequested = false;
+let shutdownSignal = null;
+let shutdownDrainPromise = null;
+const shutdownTargetPids = new Set();
+let stderrBuffer = '';
 
 function getProcessSnapshot() {
 	try {
@@ -95,15 +93,107 @@ function signalPid(pid, signal) {
 	}
 }
 
-function terminateDescendants(signal) {
-	if (process.platform === 'win32' || !child.pid) {
+function captureShutdownTargets() {
+	if (!child.pid) {
 		return;
 	}
 
-	const descendantPids = getDescendantPids(child.pid);
+	for (const descendantPid of getDescendantPids(child.pid)) {
+		shutdownTargetPids.add(descendantPid);
+	}
+}
 
-	for (const descendantPid of descendantPids.reverse()) {
-		signalPid(descendantPid, signal);
+function terminateCapturedTargets(signal) {
+	for (const targetPid of [...shutdownTargetPids].reverse()) {
+		signalPid(targetPid, signal);
+	}
+}
+
+function getLiveShutdownTargets() {
+	const liveTargetPids = [];
+
+	for (const targetPid of shutdownTargetPids) {
+		try {
+			process.kill(targetPid, 0);
+			liveTargetPids.push(targetPid);
+		} catch (error) {
+			if (error && error.code === 'ESRCH') {
+				shutdownTargetPids.delete(targetPid);
+				continue;
+			}
+
+			liveTargetPids.push(targetPid);
+		}
+	}
+
+	return liveTargetPids;
+}
+
+function wait(delayMs) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, delayMs);
+	});
+}
+
+async function drainShutdownTargets() {
+	if (shutdownDrainPromise) {
+		return shutdownDrainPromise;
+	}
+
+	shutdownDrainPromise = (async () => {
+		if (process.platform === 'win32') {
+			return;
+		}
+
+		for (let attempt = 0; attempt < 10; attempt += 1) {
+			if (getLiveShutdownTargets().length === 0) {
+				return;
+			}
+
+			if (attempt === 2) {
+				terminateCapturedTargets('SIGTERM');
+			}
+
+			if (attempt === 6) {
+				terminateCapturedTargets('SIGKILL');
+			}
+
+			await wait(200);
+		}
+	})();
+
+	return shutdownDrainPromise;
+}
+
+function shouldSuppressStderrLine(line) {
+	return shutdownRequested && /run failed: command\s+exited \(1\)/.test(line);
+}
+
+function flushStderrBuffer(force = false) {
+	const lines = stderrBuffer.split('\n');
+
+	if (!force) {
+		stderrBuffer = lines.pop() ?? '';
+	} else {
+		stderrBuffer = '';
+	}
+
+	for (const line of lines) {
+		const output = `${line}\n`;
+
+		if (shouldSuppressStderrLine(output)) {
+			continue;
+		}
+
+		process.stderr.write(output);
+	}
+
+	if (force && stderrBuffer) {
+		if (!shouldSuppressStderrLine(stderrBuffer)) {
+			process.stderr.write(stderrBuffer);
+		}
+
+		stderrBuffer = '';
 	}
 }
 
@@ -112,7 +202,7 @@ function terminateChild(signal) {
 		return;
 	}
 
-	terminateDescendants(signal);
+	captureShutdownTargets();
 
 	if (process.platform !== 'win32' && child.pid) {
 		try {
@@ -135,7 +225,8 @@ for (const signal of shutdownSignals) {
 		}
 
 		shutdownRequested = true;
-		terminateChild(getForwardedSignal(signal));
+		shutdownSignal = signal;
+		terminateChild(signal);
 	});
 }
 
@@ -144,16 +235,26 @@ child.on('error', (error) => {
 	process.exit(1);
 });
 
-child.on('exit', (code, signal) => {
+child.stderr?.setEncoding('utf8');
+child.stderr?.on('data', (chunk) => {
+	stderrBuffer += chunk;
+	flushStderrBuffer();
+});
+child.stderr?.on('close', () => {
+	flushStderrBuffer(true);
+});
+
+child.on('exit', async (code, signal) => {
 	if (shutdownRequested) {
-		terminateDescendants('SIGKILL');
+		await drainShutdownTargets();
+		process.exit(0);
 	}
 
 	if (
-		(shutdownRequested && signal === 'SIGKILL') ||
 		shutdownSignals.includes(signal) ||
 		code === 130 ||
-		code === 143
+		code === 143 ||
+		(shutdownSignal === 'SIGINT' && signal === 'SIGINT')
 	) {
 		process.exit(0);
 	}
