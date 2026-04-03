@@ -618,6 +618,7 @@ export function LoginScreen({
 													:{' '}
 													{formatHumanFriendlyDate(
 														dateOfBirth,
+														selectedLanguage,
 														t(
 															'common.values.notSelected'
 														)
@@ -735,24 +736,28 @@ function PhoneNumberRow({
 	);
 }
 
-function formatHumanFriendlyDate(value: string, fallbackLabel: string) {
+function formatHumanFriendlyDate(
+	value: string,
+	locale: string,
+	fallbackLabel: string
+) {
 	const parsedValue = parseDateOnlyValue(value);
 
 	if (!parsedValue) {
 		return fallbackLabel;
 	}
 
-	const day = parsedValue.getDate();
-	const suffix =
-		day % 10 === 1 && day % 100 !== 11
-			? 'st'
-			: day % 10 === 2 && day % 100 !== 12
-				? 'nd'
-				: day % 10 === 3 && day % 100 !== 13
-					? 'rd'
-					: 'th';
-
-	return `${day}${suffix} ${parsedValue.toLocaleString('en-US', {
-		month: 'long'
-	})} ${parsedValue.getFullYear()}`;
+	try {
+		return new Intl.DateTimeFormat(locale, {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric'
+		}).format(parsedValue);
+	} catch {
+		return new Intl.DateTimeFormat(undefined, {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric'
+		}).format(parsedValue);
+	}
 }

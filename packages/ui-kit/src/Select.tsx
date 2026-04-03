@@ -27,6 +27,42 @@ export function Select({
 	hideValue = false,
 	accessibilityLabel
 }: Props) {
+	const resetKey = React.useMemo(
+		() =>
+			JSON.stringify({
+				options,
+				value,
+				placeholder,
+				hideValue
+			}),
+		[hideValue, options, placeholder, value]
+	);
+
+	return (
+		<SelectInner
+			key={resetKey}
+			value={value}
+			onValueChange={onValueChange}
+			options={options}
+			placeholder={placeholder}
+			width={width}
+			icon={icon}
+			hideValue={hideValue}
+			accessibilityLabel={accessibilityLabel}
+		/>
+	);
+}
+
+function SelectInner({
+	value,
+	onValueChange,
+	options,
+	placeholder,
+	width,
+	icon,
+	hideValue,
+	accessibilityLabel
+}: Props) {
 	return (
 		<TamaguiSelect value={value} onValueChange={onValueChange}>
 			<TamaguiSelect.Trigger

@@ -21,20 +21,20 @@ type DateParts = {
 	day: string;
 };
 
-const MONTH_OPTIONS = [
-	{ value: '01', label: 'January' },
-	{ value: '02', label: 'February' },
-	{ value: '03', label: 'March' },
-	{ value: '04', label: 'April' },
-	{ value: '05', label: 'May' },
-	{ value: '06', label: 'June' },
-	{ value: '07', label: 'July' },
-	{ value: '08', label: 'August' },
-	{ value: '09', label: 'September' },
-	{ value: '10', label: 'October' },
-	{ value: '11', label: 'November' },
-	{ value: '12', label: 'December' }
-];
+const MONTH_VALUES = [
+	'01',
+	'02',
+	'03',
+	'04',
+	'05',
+	'06',
+	'07',
+	'08',
+	'09',
+	'10',
+	'11',
+	'12'
+] as const;
 
 export function DatePicker({
 	value,
@@ -42,15 +42,24 @@ export function DatePicker({
 	label,
 	hideLabel = false
 }: Props) {
-	const { t } = useTwyrTranslation();
+	const { t, i18n } = useTwyrTranslation();
 	const [open, setOpen] = React.useState(false);
 	const [draft, setDraft] = React.useState<DateParts>(() =>
 		createDraftFromValue(value)
 	);
+	const activeLocale = i18n.resolvedLanguage || i18n.language;
 	const selectedDate = value?.trim() ? value.trim() : '';
 	const displayValue = selectedDate
-		? formatHumanFriendlyDate(selectedDate)
+		? formatHumanFriendlyDate(selectedDate, activeLocale)
 		: t('common.placeholders.date');
+	const monthOptions = React.useMemo(
+		() =>
+			MONTH_VALUES.map((month) => ({
+				value: month,
+				label: t(`datePicker.months.${month}`)
+			})),
+		[activeLocale, t]
+	);
 	const currentYear = new Date().getFullYear();
 	const yearOptions = React.useMemo(
 		() =>
@@ -186,7 +195,7 @@ export function DatePicker({
 										return nextDraft;
 									});
 								}}
-								options={MONTH_OPTIONS}
+								options={monthOptions}
 								placeholder={t('common.placeholders.month')}
 							/>
 						</YStack>
@@ -264,37 +273,24 @@ function getMaxDay(value: DateParts) {
 	return new Date(year, month, 0).getDate();
 }
 
-function formatHumanFriendlyDate(value: string) {
+function formatHumanFriendlyDate(value: string, locale?: string) {
 	const parsedValue = parseDateOnlyValue(value);
 
 	if (!parsedValue) {
 		return value;
 	}
 
-	const day = parsedValue.getDate();
-	const month = parsedValue.toLocaleString(undefined, {
-		month: 'long'
-	});
-	const year = parsedValue.getFullYear();
-
-	return `${formatOrdinal(day)} ${month} ${year}`;
-}
-
-function formatOrdinal(value: number) {
-	const remainder = value % 100;
-
-	if (remainder >= 11 && remainder <= 13) {
-		return `${value}th`;
-	}
-
-	switch (value % 10) {
-		case 1:
-			return `${value}st`;
-		case 2:
-			return `${value}nd`;
-		case 3:
-			return `${value}rd`;
-		default:
-			return `${value}th`;
+	try {
+		return new Intl.DateTimeFormat(locale, {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric'
+		}).format(parsedValue);
+	} catch {
+		return new Intl.DateTimeFormat(undefined, {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric'
+		}).format(parsedValue);
 	}
 }
