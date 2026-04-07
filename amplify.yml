@@ -1,0 +1,50 @@
+version: 1
+applications:
+  - appRoot: apps/web-users
+    frontend:
+      buildPath: /
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - rm -f apps/web-users/.env.production
+            - touch apps/web-users/.env.production
+            - test -n "$AUTH_SERVER_PROTOCOL"
+            - test -n "$AUTH_SERVER_IP"
+            - test -n "$AUTH_SERVER_PORT"
+            - env | grep -e '^AUTH_SERVER_PROTOCOL=' -e '^AUTH_SERVER_IP=' -e '^AUTH_SERVER_PORT=' >> apps/web-users/.env.production
+            - npm --workspace @twyr/web-users run build
+      artifacts:
+        baseDirectory: apps/web-users/.next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - .next/cache/**/*
+  - appRoot: apps/web-system-administrators
+    frontend:
+      buildPath: /
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - rm -f apps/web-system-administrators/.env.production
+            - touch apps/web-system-administrators/.env.production
+            - test -n "$AUTH_SERVER_PROTOCOL"
+            - test -n "$AUTH_SERVER_IP"
+            - test -n "$AUTH_SERVER_PORT"
+            - env | grep -e '^AUTH_SERVER_PROTOCOL=' -e '^AUTH_SERVER_IP=' -e '^AUTH_SERVER_PORT=' >> apps/web-system-administrators/.env.production
+            - npm --workspace @twyr/web-system-administrators run build
+      artifacts:
+        baseDirectory: apps/web-system-administrators/.next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - .next/cache/**/*
