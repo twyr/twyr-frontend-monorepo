@@ -65,7 +65,7 @@
 		"@twyr/i18n": "0.1.0",
 		"@twyr/ui-composed": "0.1.0",
 		"@twyr/ui-kit": "0.1.0",
-		"react": "19.2.4",
+		"react": "19.2.5",
 		"tamagui": "1.144.4"
 	}
 }
