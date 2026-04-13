@@ -65,7 +65,7 @@
 		"@twyr/i18n": "0.1.0",
 		"@twyr/system-administrators-profile-frontend": "0.1.0",
 		"@twyr/system-administrators-session-management-frontend": "0.1.0",
-		"expo": "55.0.12",
+		"expo": "55.0.14",
 		"react": "19.2.5",
 		"react-native": "0.85.0",
 		"tamagui": "1.144.4"
