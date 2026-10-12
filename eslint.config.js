@@ -56,15 +56,7 @@ export default [
 			'unicorn/prefer-module': 'error',
 			'unicorn/no-null': 'off',
 			'unicorn/prevent-abbreviations': 'off',
-			'unicorn/filename-case': [
-				'error',
-				{
-					cases: {
-						kebabCase: true,
-						pascalCase: true
-					}
-				}
-			]
+			'unicorn/filename-case': 'off'
 		}
 	},
 
@@ -105,15 +97,7 @@ export default [
 			'unicorn/prefer-module': 'error',
 			'unicorn/no-null': 'off',
 			'unicorn/prevent-abbreviations': 'off',
-			'unicorn/filename-case': [
-				'error',
-				{
-					cases: {
-						kebabCase: true,
-						pascalCase: true
-					}
-				}
-			]
+			'unicorn/filename-case': 'off'
 		}
 	},
 

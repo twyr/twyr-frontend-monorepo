@@ -12,8 +12,8 @@ import {
 import { useLocalizedPageRequests } from '@twyr/app-providers/src/page-requests';
 import { useTwyrTranslation } from '@twyr/i18n';
 import { DatePicker } from '@twyr/ui-composed';
-import { Button, Card, Input, Select } from '@twyr/ui-kit';
-import { Text, XStack, YStack } from 'tamagui';
+import { Button, Card, Input, Select, Tabs } from '@twyr/ui-kit';
+import { Text, XStack, YStack, Paragraph } from 'tamagui';
 
 type LanguageOption = {
 	code: string;
@@ -163,55 +163,69 @@ export function LoginScreen({
 	}, [gendersEndpoint, runRequest, unregisterRequest]);
 
 	return (
-		<YStack flex={1} justifyContent="center" padding="$5">
-			<YStack maxWidth={760} width="100%" alignSelf="center" gap="$5">
-				<Card>
-					<YStack gap="$3">
+		<YStack flexGrow={0} flexShrink={0} justifyContent="center" padding="5">
+			<YStack maxWidth={760} width="100%" alignSelf="center" gap="5">
+				<Card paddingTop={0}>
+					<Tabs
+						gap="3"
+						value={activeTab}
+						onValueChange={(value) => {
+							if (value === 'login' || value === 'register') {
+								setActiveTab(value);
+								resetMessage();
+							}
+						}}
+					>
 						<XStack
 							alignItems="center"
-							backgroundColor="rgba(2, 6, 23, 0.7)"
-							borderBottomColor="rgba(255, 255, 255, 0.05)"
+							borderBottomColor="border-color"
 							borderBottomWidth={1}
-							borderRadius="$3"
 							flexWrap="wrap"
-							gap="$3"
+							gap="3"
 							justifyContent="space-between"
-							paddingHorizontal="$3"
-							paddingVertical="$2"
 						>
 							{headerLogo ?? null}
-							<XStack gap="$2" flexWrap="wrap">
-								<Button
-									tone={
-										activeTab === 'login'
-											? 'primary'
-											: 'neutral'
-									}
-									onPress={() => {
-										setActiveTab('login');
-										resetMessage();
-									}}
-								>
-									{t('common.actions.login')}
-								</Button>
-								<Button
-									tone={
-										activeTab === 'register'
-											? 'primary'
-											: 'neutral'
-									}
-									onPress={() => {
-										setActiveTab('register');
-										resetMessage();
-									}}
-								>
-									{t('userLogin.register')}
-								</Button>
-							</XStack>
+							<Tabs.List borderRadius={0}>
+								{(['login', 'register'] as const).map(
+									(value) => (
+										<Tabs.Tab
+											key={value}
+											value={value}
+											alignItems="center"
+											backgroundColor="transparent hover:background-hover press:background-press"
+											borderRadius={0}
+											borderBottomWidth={2}
+											borderBottomColor={
+												activeTab === value
+													? 'primary'
+													: 'transparent'
+											}
+											paddingHorizontal="4"
+											paddingTop={0}
+											paddingBottom="3"
+										>
+											<Text
+												color={
+													activeTab === value
+														? 'primary'
+														: 'colorMuted'
+												}
+												fontWeight="600"
+											>
+												{t(
+													value === 'login'
+														? 'common.actions.login'
+														: 'userLogin.register'
+												)}
+											</Text>
+										</Tabs.Tab>
+									)
+								)}
+							</Tabs.List>
 						</XStack>
 
 						{activeTab === 'login' ? (
-							<YStack gap="$4">
+							<Tabs.Content value="login" gap="4">
 								<Select
 									value={selectedLanguage}
 									onValueChange={(value) =>
@@ -219,14 +233,36 @@ export function LoginScreen({
 											value as AppLanguageCode
 										)
 									}
-									options={languageOptions.map((option) => ({
-										label: option.label,
-										value: option.code
-									}))}
-									placeholder={t(
-										'common.placeholders.language'
-									)}
-								/>
+									zIndex={200000}
+								>
+									<Select.Trigger>
+										<Select.Value
+											placeholder={t(
+												'common.placeholders.language'
+											)}
+										/>
+										<Select.Icon />
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Viewport>
+											<Select.Group>
+												{languageOptions.map(
+													(option) => (
+														<Select.Item
+															key={option.code}
+															value={option.code}
+														>
+															<Select.ItemText>
+																{option.label}
+															</Select.ItemText>
+															<Select.ItemIndicator />
+														</Select.Item>
+													)
+												)}
+											</Select.Group>
+										</Select.Viewport>
+									</Select.Content>
+								</Select>
 								<PhoneNumberRow
 									countryCode={loginCountryCode}
 									onCountryCodeChange={setLoginCountryCode}
@@ -307,10 +343,10 @@ export function LoginScreen({
 										? t('common.actions.login')
 										: t('common.actions.generateOtp')}
 								</Button>
-							</YStack>
+							</Tabs.Content>
 						) : (
-							<YStack gap="$4">
-								<Text color="$colorHover">
+							<Tabs.Content value="register" gap="4">
+								<Text color="color-hover">
 									{t('common.status.stepOf', {
 										step: registrationStep,
 										total: 4
@@ -318,7 +354,7 @@ export function LoginScreen({
 								</Text>
 
 								{registrationStep === 1 ? (
-									<YStack gap="$4">
+									<YStack gap="4">
 										<Select
 											value={selectedLanguage}
 											onValueChange={(value) =>
@@ -326,26 +362,83 @@ export function LoginScreen({
 													value as AppLanguageCode
 												)
 											}
-											options={languageOptions.map(
-												(option) => ({
-													label: option.label,
-													value: option.code
-												})
-											)}
-											placeholder={t(
-												'common.placeholders.language'
-											)}
-										/>
+											zIndex={200000}
+										>
+											<Select.Trigger>
+												<Select.Value
+													placeholder={t(
+														'common.placeholders.language'
+													)}
+												/>
+												<Select.Icon />
+											</Select.Trigger>
+											<Select.Content>
+												<Select.Viewport>
+													<Select.Group>
+														{languageOptions.map(
+															(option) => (
+																<Select.Item
+																	key={
+																		option.code
+																	}
+																	value={
+																		option.code
+																	}
+																>
+																	<Select.ItemText>
+																		{
+																			option.label
+																		}
+																	</Select.ItemText>
+																	<Select.ItemIndicator />
+																</Select.Item>
+															)
+														)}
+													</Select.Group>
+												</Select.Viewport>
+											</Select.Content>
+										</Select>
 										<Select
 											value={registrationCountryCode}
 											onValueChange={
 												setRegistrationCountryCode
 											}
-											options={countrySelectOptions}
-											placeholder={t(
-												'common.placeholders.country'
-											)}
-										/>
+											zIndex={200000}
+										>
+											<Select.Trigger>
+												<Select.Value
+													placeholder={t(
+														'common.placeholders.country'
+													)}
+												/>
+												<Select.Icon />
+											</Select.Trigger>
+											<Select.Content>
+												<Select.Viewport>
+													<Select.Group>
+														{countrySelectOptions.map(
+															(option) => (
+																<Select.Item
+																	key={
+																		option.value
+																	}
+																	value={
+																		option.value
+																	}
+																>
+																	<Select.ItemText>
+																		{
+																			option.label
+																		}
+																	</Select.ItemText>
+																	<Select.ItemIndicator />
+																</Select.Item>
+															)
+														)}
+													</Select.Group>
+												</Select.Viewport>
+											</Select.Content>
+										</Select>
 										<Input
 											placeholder={t(
 												'common.placeholders.mobileNumber'
@@ -454,9 +547,9 @@ export function LoginScreen({
 								) : null}
 
 								{registrationStep === 2 ? (
-									<YStack gap="$4">
-										<YStack gap="$2">
-											<Text color="$colorMuted">
+									<YStack gap="4">
+										<YStack gap="2">
+											<Text color="colorMuted">
 												{t(
 													'registration.firstNameRequired'
 												)}
@@ -476,8 +569,8 @@ export function LoginScreen({
 											value={middleNames}
 											onChangeText={setMiddleNames}
 										/>
-										<YStack gap="$2">
-											<Text color="$colorMuted">
+										<YStack gap="2">
+											<Text color="colorMuted">
 												{t(
 													'registration.lastNameRequired'
 												)}
@@ -497,7 +590,7 @@ export function LoginScreen({
 											value={nickname}
 											onChangeText={setNickname}
 										/>
-										<XStack gap="$3">
+										<XStack gap="3">
 											<Button
 												tone="neutral"
 												onPress={() =>
@@ -521,15 +614,46 @@ export function LoginScreen({
 								) : null}
 
 								{registrationStep === 3 ? (
-									<YStack gap="$4">
+									<YStack gap="4">
 										<Select
 											value={genderId}
 											onValueChange={setGenderId}
-											options={genderSelectOptions}
-											placeholder={t(
-												'common.placeholders.gender'
-											)}
-										/>
+											zIndex={200000}
+										>
+											<Select.Trigger>
+												<Select.Value
+													placeholder={t(
+														'common.placeholders.gender'
+													)}
+												/>
+												<Select.Icon />
+											</Select.Trigger>
+											<Select.Content>
+												<Select.Viewport>
+													<Select.Group>
+														{genderSelectOptions.map(
+															(option) => (
+																<Select.Item
+																	key={
+																		option.value
+																	}
+																	value={
+																		option.value
+																	}
+																>
+																	<Select.ItemText>
+																		{
+																			option.label
+																		}
+																	</Select.ItemText>
+																	<Select.ItemIndicator />
+																</Select.Item>
+															)
+														)}
+													</Select.Group>
+												</Select.Viewport>
+											</Select.Content>
+										</Select>
 										<DatePicker
 											label={t(
 												'common.labels.dateOfBirth'
@@ -537,7 +661,7 @@ export function LoginScreen({
 											value={dateOfBirth}
 											onChange={setDateOfBirth}
 										/>
-										<XStack gap="$3">
+										<XStack gap="3">
 											<Button
 												tone="neutral"
 												onPress={() =>
@@ -561,30 +685,38 @@ export function LoginScreen({
 								) : null}
 
 								{registrationStep === 4 ? (
-									<YStack gap="$4">
-										<Card
-											title={t('common.actions.review')}
-											description={t(
-												'userLogin.reviewDescription'
-											)}
-										>
-											<YStack gap="$2">
-												<Text color="$colorHover">
+									<YStack gap="4">
+										<Card>
+											<Card.Header>
+												<Paragraph
+													fontWeight="700"
+													fontSize="6"
+												>
+													{t('common.actions.review')}
+												</Paragraph>
+												<Paragraph color="colorMuted">
+													{t(
+														'userLogin.reviewDescription'
+													)}
+												</Paragraph>
+											</Card.Header>
+											<YStack gap="2">
+												<Text color="color-hover">
 													{t(
 														'common.labels.language'
 													)}
 													: {selectedLanguage}
 												</Text>
-												<Text color="$colorHover">
+												<Text color="color-hover">
 													{t('common.labels.country')}
 													: {registrationCountryCode}
 												</Text>
-												<Text color="$colorHover">
+												<Text color="color-hover">
 													{t('common.labels.phone')}:{' '}
 													{COUNTRY_CODE}{' '}
 													{registrationPhoneNumber}
 												</Text>
-												<Text color="$colorHover">
+												<Text color="color-hover">
 													{t('common.labels.name')}:{' '}
 													{[
 														firstName,
@@ -594,7 +726,7 @@ export function LoginScreen({
 														.filter(Boolean)
 														.join(' ')}
 												</Text>
-												<Text color="$colorHover">
+												<Text color="color-hover">
 													{t(
 														'common.labels.nickname'
 													)}
@@ -604,14 +736,14 @@ export function LoginScreen({
 															'common.values.notProvided'
 														)}
 												</Text>
-												<Text color="$colorHover">
+												<Text color="color-hover">
 													{t('common.labels.gender')}:{' '}
 													{selectedGenderLabel ||
 														t(
 															'common.values.notSelected'
 														)}
 												</Text>
-												<Text color="$colorHover">
+												<Text color="color-hover">
 													{t(
 														'common.labels.dateOfBirth'
 													)}
@@ -626,7 +758,7 @@ export function LoginScreen({
 												</Text>
 											</YStack>
 										</Card>
-										<XStack gap="$3">
+										<XStack gap="3">
 											<Button
 												tone="neutral"
 												onPress={() =>
@@ -679,21 +811,21 @@ export function LoginScreen({
 										</XStack>
 									</YStack>
 								) : null}
-							</YStack>
+							</Tabs.Content>
 						)}
 
 						{message ? (
 							<Text
 								color={
 									message.tone === 'error'
-										? '$error'
-										: '$success'
+										? 'danger'
+										: 'success'
 								}
 							>
 								{message.text}
 							</Text>
 						) : null}
-					</YStack>
+					</Tabs>
 				</Card>
 			</YStack>
 		</YStack>
@@ -715,14 +847,37 @@ function PhoneNumberRow({
 }) {
 	const { t } = useTwyrTranslation();
 	return (
-		<YStack gap="$3" width="100%">
+		<YStack gap="3" width="100%">
 			<YStack width="100%">
 				<Select
 					value={countryCode}
 					onValueChange={onCountryCodeChange}
-					options={countrySelectOptions}
-					placeholder={t('common.placeholders.country')}
-				/>
+					zIndex={200000}
+				>
+					<Select.Trigger>
+						<Select.Value
+							placeholder={t('common.placeholders.country')}
+						/>
+						<Select.Icon />
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Viewport>
+							<Select.Group>
+								{countrySelectOptions.map((option) => (
+									<Select.Item
+										key={option.value}
+										value={option.value}
+									>
+										<Select.ItemText>
+											{option.label}
+										</Select.ItemText>
+										<Select.ItemIndicator />
+									</Select.Item>
+								))}
+							</Select.Group>
+						</Select.Viewport>
+					</Select.Content>
+				</Select>
 			</YStack>
 			<YStack width="100%">
 				<Input

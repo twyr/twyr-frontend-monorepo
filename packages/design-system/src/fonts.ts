@@ -3,7 +3,8 @@ import {
 	fontLetterSpacingScale,
 	fontLineHeightScale,
 	fontSizeScale,
-	fontWeightScale
+	fontWeightScale,
+	withNamedTextSizes
 } from './foundations';
 
 export const fontFamilies = {
@@ -13,10 +14,10 @@ export const fontFamilies = {
 
 export const bodyFont = createFont({
 	family: fontFamilies.body,
-	size: fontSizeScale,
-	lineHeight: fontLineHeightScale,
-	weight: fontWeightScale,
-	letterSpacing: fontLetterSpacingScale,
+	size: withNamedTextSizes(fontSizeScale),
+	lineHeight: withNamedTextSizes(fontLineHeightScale),
+	weight: withNamedTextSizes(fontWeightScale),
+	letterSpacing: withNamedTextSizes(fontLetterSpacingScale),
 	face: {
 		400: { normal: '400' },
 		500: { normal: '500' },
@@ -27,9 +28,9 @@ export const bodyFont = createFont({
 
 export const headingFont = createFont({
 	family: fontFamilies.heading,
-	size: fontSizeScale,
-	lineHeight: fontLineHeightScale,
-	weight: {
+	size: withNamedTextSizes(fontSizeScale),
+	lineHeight: withNamedTextSizes(fontLineHeightScale),
+	weight: withNamedTextSizes({
 		1: '500',
 		2: '500',
 		3: '600',
@@ -40,8 +41,8 @@ export const headingFont = createFont({
 		7: '700',
 		8: '700',
 		9: '700'
-	},
-	letterSpacing: {
+	}),
+	letterSpacing: withNamedTextSizes({
 		1: 0,
 		2: 0,
 		3: 0,
@@ -52,7 +53,7 @@ export const headingFont = createFont({
 		7: -0.3,
 		8: -0.4,
 		9: -0.5
-	},
+	}),
 	face: {
 		500: { normal: '500' },
 		600: { normal: '600' },

@@ -20,17 +20,17 @@ export function TopNav({
 		<XStack
 			justifyContent="space-between"
 			alignItems="center"
-			paddingHorizontal="$5"
-			paddingVertical="$4"
+			paddingHorizontal="5"
+			paddingVertical="4"
 			borderBottomWidth={1}
-			borderColor="$borderColor"
-			backgroundColor="$background"
+			borderColor="border-color"
+			backgroundColor="background"
 		>
-			<XStack gap="$3" alignItems="center">
-				<Text fontSize="$8" fontWeight="700" color="$color">
+			<XStack gap="3" alignItems="center">
+				<Text fontSize="8" fontWeight="700" color="color">
 					{title}
 				</Text>
-				{subtitle ? <Text color="$colorHover">{subtitle}</Text> : null}
+				{subtitle ? <Text color="color-hover">{subtitle}</Text> : null}
 			</XStack>
 			<ThemeToggle value={themeMode} onChange={onThemeModeChange} />
 		</XStack>

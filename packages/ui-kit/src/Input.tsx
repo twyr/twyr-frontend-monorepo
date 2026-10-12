@@ -1,23 +1,16 @@
-import React from 'react';
-import { Input as TamaguiInput, GetProps } from 'tamagui';
+import { Input as TamaguiInput, styled } from 'tamagui';
 import { controlHeights, controlPadding } from './ControlStyles';
 
-type Props = GetProps<typeof TamaguiInput>;
-
-export function Input(props: Props) {
-	return (
-		<TamaguiInput
-			backgroundColor="$backgroundSoft"
-			borderColor="$borderColor"
-			placeholderTextColor="$colorSoft"
-			focusStyle={{ borderColor: '$primary' }}
-			borderRadius="$4"
-			minHeight={controlHeights.default}
-			paddingHorizontal={controlPadding.horizontal}
-			paddingVertical={controlPadding.vertical}
-			fontSize="$3"
-			lineHeight="$3"
-			{...props}
-		/>
-	);
-}
+export const Input = styled(TamaguiInput, {
+	displayName: 'TwyrInput',
+	size: false,
+	backgroundColor: 'backgroundSoft',
+	borderColor: { default: 'border-color', focus: 'primary' },
+	placeholderTextColor: 'colorSoft',
+	borderRadius: '4',
+	minHeight: controlHeights.default,
+	paddingHorizontal: controlPadding.horizontal,
+	paddingVertical: controlPadding.vertical,
+	fontSize: '3',
+	lineHeight: '3'
+});

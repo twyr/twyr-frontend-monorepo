@@ -1,14 +1,16 @@
 import React from 'react';
 import {
-	ColumnDef,
-	RowData,
+	type RowData,
 	flexRender,
+	type SortingState
+} from '@tanstack/react-table';
+import {
+	type LegacyColumnDef as ColumnDef,
 	getCoreRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	SortingState,
-	useReactTable
-} from '@tanstack/react-table';
+	useLegacyTable
+} from '@tanstack/react-table/legacy';
 import { Button, Card, Separator } from '@twyr/ui-kit';
 import { Paragraph, ScrollView, XStack, YStack } from 'tamagui';
 
@@ -27,7 +29,7 @@ export function DataTable<T extends RowData>({
 }: Props<T>) {
 	const headerTones = ['primary', 'secondary', 'accent', 'primary'] as const;
 	const [sorting, setSorting] = React.useState<SortingState>([]);
-	const table = useReactTable({
+	const table = useLegacyTable({
 		data,
 		columns,
 		state: { sorting },
@@ -38,13 +40,25 @@ export function DataTable<T extends RowData>({
 	});
 
 	return (
-		<Card title={title} description={description}>
+		<Card>
+			{title || description ? (
+				<Card.Header>
+					{title ? (
+						<Paragraph fontWeight="700" fontSize="6">
+							{title}
+						</Paragraph>
+					) : null}
+					{description ? (
+						<Paragraph color="colorMuted">{description}</Paragraph>
+					) : null}
+				</Card.Header>
+			) : null}
 			<ScrollView horizontal>
 				<YStack minWidth={720}>
 					<XStack
-						backgroundColor="$backgroundSoft"
-						padding="$3"
-						gap="$3"
+						backgroundColor="backgroundSoft"
+						padding="3"
+						gap="3"
 					>
 						{table.getHeaderGroups().map((headerGroup) =>
 							headerGroup.headers.map((header, index) => (
@@ -79,7 +93,7 @@ export function DataTable<T extends RowData>({
 					<Separator />
 					{table.getRowModel().rows.map((row) => (
 						<React.Fragment key={row.id}>
-							<XStack padding="$3" gap="$3">
+							<XStack padding="3" gap="3">
 								{row.getVisibleCells().map((cell) => (
 									<YStack
 										key={cell.id}
@@ -100,13 +114,12 @@ export function DataTable<T extends RowData>({
 					))}
 				</YStack>
 			</ScrollView>
-
 			<XStack justifyContent="space-between" alignItems="center">
-				<Paragraph color="$colorMuted">
+				<Paragraph color="colorMuted">
 					Page {table.getState().pagination.pageIndex + 1} of{' '}
 					{table.getPageCount() || 1}
 				</Paragraph>
-				<XStack gap="$2">
+				<XStack gap="2">
 					<Button
 						tone="neutral"
 						disabled={!table.getCanPreviousPage()}

@@ -13,13 +13,13 @@ export function PageHeader({ eyebrow, title, description, actions }: Props) {
 		<XStack
 			justifyContent="space-between"
 			alignItems="flex-start"
-			gap="$5"
+			gap="5"
 			flexWrap="wrap"
 		>
-			<YStack gap="$2" maxWidth={820}>
+			<YStack gap="2" maxWidth={820}>
 				{eyebrow ? (
 					<Paragraph
-						color="$primary"
+						color="primary"
 						fontWeight="700"
 						textTransform="uppercase"
 						letterSpacing={0.3}
@@ -27,14 +27,14 @@ export function PageHeader({ eyebrow, title, description, actions }: Props) {
 						{eyebrow}
 					</Paragraph>
 				) : null}
-				<H1 color="$color">{title}</H1>
+				<H1 color="color">{title}</H1>
 				{description ? (
-					<Paragraph color="$colorMuted" size="$5">
+					<Paragraph color="colorMuted" size="5">
 						{description}
 					</Paragraph>
 				) : null}
 			</YStack>
-			{actions ? <XStack gap="$3">{actions}</XStack> : null}
+			{actions ? <XStack gap="3">{actions}</XStack> : null}
 		</XStack>
 	);
 }

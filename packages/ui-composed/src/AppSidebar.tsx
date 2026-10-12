@@ -17,17 +17,17 @@ export function AppSidebar({ title, items }: Props) {
 		<YStack
 			width={260}
 			minHeight="100vh"
-			backgroundColor="$background"
+			backgroundColor="background"
 			borderRightWidth={1}
-			borderColor="$borderColor"
-			padding="$4"
-			gap="$4"
+			borderColor="border-color"
+			padding="4"
+			gap="4"
 		>
-			<Text fontSize="$8" fontWeight="700" color="$color">
+			<Text fontSize="8" fontWeight="700" color="color">
 				{title}
 			</Text>
 			<Separator />
-			<YStack gap="$2">
+			<YStack gap="2">
 				{items.map((item) => (
 					<XStack key={item.href}>
 						<a
@@ -35,14 +35,12 @@ export function AppSidebar({ title, items }: Props) {
 							style={{ textDecoration: 'none', width: '100%' }}
 						>
 							<XStack
-								paddingHorizontal="$3"
-								paddingVertical="$2"
-								borderRadius="$3"
-								hoverStyle={{
-									backgroundColor: '$backgroundHover'
-								}}
+								paddingHorizontal="3"
+								paddingVertical="2"
+								borderRadius="3"
+								backgroundColor={{ hover: 'background-hover' }}
 							>
-								<Text color="$color">{item.label}</Text>
+								<Text color="color">{item.label}</Text>
 							</XStack>
 						</a>
 					</XStack>

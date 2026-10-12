@@ -1,112 +1,34 @@
-import React from 'react';
-import { Select as TamaguiSelect, XStack } from 'tamagui';
+import { Select as TamaguiSelect, styled, withStaticProperties } from 'tamagui';
 import { controlHeights, controlPadding } from './ControlStyles';
 
-import { ChevronDownIcon } from './icons';
-
-type Option = { label: string; value: string };
-
-type Props = {
-	value: string;
-	onValueChange: (value: string) => void;
-	options: Option[];
-	placeholder?: string;
-	width?: number | string;
-	icon?: React.ReactNode;
-	hideValue?: boolean;
-	accessibilityLabel?: string;
-};
-
-export function Select({
-	value,
-	onValueChange,
-	options,
-	placeholder = 'Select an option',
-	width = '100%',
-	icon,
-	hideValue = false,
-	accessibilityLabel
-}: Props) {
-	const resetKey = React.useMemo(
-		() =>
-			JSON.stringify({
-				options,
-				value,
-				placeholder,
-				hideValue
-			}),
-		[hideValue, options, placeholder, value]
-	);
-
-	return (
-		<SelectInner
-			key={resetKey}
-			value={value}
-			onValueChange={onValueChange}
-			options={options}
-			placeholder={placeholder}
-			width={width}
-			icon={icon}
-			hideValue={hideValue}
-			accessibilityLabel={accessibilityLabel}
-		/>
-	);
-}
-
-function SelectInner({
-	value,
-	onValueChange,
-	options,
-	placeholder,
-	width,
-	icon,
-	hideValue,
-	accessibilityLabel
-}: Props) {
-	return (
-		<TamaguiSelect value={value} onValueChange={onValueChange}>
-			<TamaguiSelect.Trigger
-				width={width}
-				backgroundColor="$backgroundSoft"
-				borderColor="$borderColor"
-				borderRadius="$4"
-				minHeight={controlHeights.default}
-				paddingHorizontal={controlPadding.horizontal}
-				paddingVertical={controlPadding.vertical}
-				fontSize="$3"
-				iconAfter={ChevronDownIcon}
-				focusStyle={{ borderColor: '$primary' }}
-				accessibilityLabel={accessibilityLabel}
-			>
-				<XStack gap="$2" alignItems="center" justifyContent="center">
-					{icon}
-					{hideValue ? (
-						<TamaguiSelect.Value placeholder=" " />
-					) : (
-						<TamaguiSelect.Value placeholder={placeholder} />
-					)}
-				</XStack>
-			</TamaguiSelect.Trigger>
-
-			<TamaguiSelect.Content zIndex={200000}>
-				<TamaguiSelect.Viewport>
-					<TamaguiSelect.Group>
-						{options.map((option, index) => (
-							<TamaguiSelect.Item
-								key={option.value}
-								index={index}
-								value={option.value}
-								minHeight={controlHeights.default}
-								paddingHorizontal={controlPadding.horizontal}
-							>
-								<TamaguiSelect.ItemText>
-									{option.label}
-								</TamaguiSelect.ItemText>
-							</TamaguiSelect.Item>
-						))}
-					</TamaguiSelect.Group>
-				</TamaguiSelect.Viewport>
-			</TamaguiSelect.Content>
-		</TamaguiSelect>
-	);
-}
+export const Select = withStaticProperties(TamaguiSelect, {
+	Trigger: styled(TamaguiSelect.Trigger, {
+		displayName: 'TwyrSelectTrigger',
+		size: false,
+		width: '100%',
+		backgroundColor: 'backgroundSoft',
+		borderColor: { default: 'border-color', focus: 'primary' },
+		borderRadius: '4',
+		minHeight: controlHeights.default,
+		paddingHorizontal: controlPadding.horizontal,
+		paddingVertical: controlPadding.vertical,
+		fontSize: '3'
+	}),
+	Item: styled(TamaguiSelect.Item, {
+		displayName: 'TwyrSelectItem',
+		minHeight: controlHeights.default,
+		paddingHorizontal: controlPadding.horizontal
+	}),
+	Value: styled(TamaguiSelect.Value, {
+		displayName: 'TwyrSelectValue',
+		size: false,
+		fontSize: '3',
+		lineHeight: '3'
+	}),
+	ItemText: styled(TamaguiSelect.ItemText, {
+		displayName: 'TwyrSelectItemText',
+		size: false,
+		fontSize: '3',
+		lineHeight: '3'
+	})
+});

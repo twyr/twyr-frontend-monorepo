@@ -1,6 +1,7 @@
 'use client';
 
-import { Button, getVariableValue, useTheme } from 'tamagui';
+import { getVariableValue, useTheme, Paragraph } from 'tamagui';
+import { Button } from './Button';
 
 import { DeviceDesktopIcon, MoonIcon, SunIcon } from './icons';
 import { Tooltip } from './Tooltip';
@@ -27,17 +28,22 @@ export function ThemeToggle({ value, onChange }: Props) {
 				: DeviceDesktopIcon;
 
 	return (
-		<Tooltip content={`${label} Mode`}>
-			<Button
-				chromeless
-				width={40}
-				height={40}
-				padding={0}
-				borderRadius={999}
-				icon={<ThemeIcon color={iconColor} />}
-				onPress={() => onChange(nextTheme)}
-				accessibilityLabel={`Current theme: ${label}. Switch to ${nextTheme}.`}
-			/>
+		<Tooltip>
+			<Tooltip.Trigger asChild>
+				<Button
+					variant="quiet"
+					width={40}
+					height={40}
+					padding={0}
+					borderRadius={999}
+					icon={<ThemeIcon color={iconColor} />}
+					onPress={() => onChange(nextTheme)}
+					aria-label={`Current theme: ${label}. Switch to ${nextTheme}.`}
+				/>
+			</Tooltip.Trigger>
+			<Tooltip.Content>
+				<Paragraph>{`${label} Mode`}</Paragraph>
+			</Tooltip.Content>
 		</Tooltip>
 	);
 }

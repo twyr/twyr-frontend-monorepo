@@ -1,23 +1,16 @@
-import React from 'react';
-import { GetProps, TextArea as TamaguiTextArea } from 'tamagui';
+import { TextArea as TamaguiTextArea, styled } from 'tamagui';
 import { controlHeights, controlPadding } from './ControlStyles';
 
-type Props = GetProps<typeof TamaguiTextArea>;
-
-export function TextArea(props: Props) {
-	return (
-		<TamaguiTextArea
-			backgroundColor="$backgroundSoft"
-			borderColor="$borderColor"
-			placeholderTextColor="$colorSoft"
-			focusStyle={{ borderColor: '$primary' }}
-			borderRadius="$4"
-			minHeight={controlHeights.comfortable * 2}
-			paddingHorizontal={controlPadding.horizontal}
-			paddingVertical={controlPadding.textAreaVertical}
-			fontSize="$3"
-			lineHeight="$3"
-			{...props}
-		/>
-	);
-}
+export const TextArea = styled(TamaguiTextArea, {
+	displayName: 'TwyrTextArea',
+	size: false,
+	backgroundColor: 'backgroundSoft',
+	borderColor: { default: 'border-color', focus: 'primary' },
+	placeholderTextColor: 'colorSoft',
+	borderRadius: '4',
+	minHeight: controlHeights.comfortable * 2,
+	paddingHorizontal: controlPadding.horizontal,
+	paddingVertical: controlPadding.textAreaVertical,
+	fontSize: '3',
+	lineHeight: '3'
+});

@@ -27,7 +27,7 @@ export function Combobox({
 	);
 
 	return (
-		<YStack gap="$2">
+		<YStack gap="2">
 			{label ? <Paragraph>{label}</Paragraph> : null}
 			<Input
 				value={open ? query : (selectedOption?.label ?? '')}
@@ -37,11 +37,11 @@ export function Combobox({
 			/>
 			{open ? (
 				<Card>
-					<YStack gap="$2">
+					<YStack gap="2">
 						{filtered.map((option) => (
 							<Button
 								key={option.value}
-								chromeless
+								variant="quiet"
 								justifyContent="flex-start"
 								onPress={() => {
 									onValueChange?.(option.value);

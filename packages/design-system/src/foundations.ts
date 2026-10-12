@@ -1,5 +1,5 @@
 export const sizeScale = {
-	true: 16,
+	default: 16,
 	0: 0,
 	1: 4,
 	2: 8,
@@ -16,7 +16,9 @@ export const sizeScale = {
 } as const;
 
 export const spaceScale = {
-	true: 16,
+	default: 16,
+	'1.5': 6,
+	'2.5': 10,
 	0: 0,
 	1: 4,
 	2: 8,
@@ -33,7 +35,10 @@ export const spaceScale = {
 } as const;
 
 export const radiusScale = {
-	true: 10,
+	default: 10,
+	sm: 6,
+	md: 10,
+	lg: 14,
 	0: 0,
 	1: 6,
 	2: 10,
@@ -46,6 +51,7 @@ export const radiusScale = {
 
 export const zIndexScale = {
 	0: 0,
+	10: 10,
 	1: 100,
 	2: 200,
 	3: 300,
@@ -106,6 +112,38 @@ export const fontLetterSpacingScale = {
 	9: -0.4
 } as const;
 
+const textSizeSteps = {
+	xs: 1,
+	sm: 2,
+	base: 3,
+	lg: 4,
+	xl: 5,
+	'2xl': 6,
+	'3xl': 7,
+	'4xl': 8,
+	'5xl': 9
+} as const;
+
+// Native component skins use these names for text sizing.
+export function withNamedTextSizes<
+	const T extends Record<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9, string | number>
+>(scale: T) {
+	return {
+		...scale,
+		xs: scale[textSizeSteps.xs],
+		sm: scale[textSizeSteps.sm],
+		base: scale[textSizeSteps.base],
+		lg: scale[textSizeSteps.lg],
+		xl: scale[textSizeSteps.xl],
+		'2xl': scale[textSizeSteps['2xl']],
+		'3xl': scale[textSizeSteps['3xl']],
+		'4xl': scale[textSizeSteps['4xl']],
+		'5xl': scale[textSizeSteps['5xl']]
+	} as T & {
+		[Name in keyof typeof textSizeSteps]: T[(typeof textSizeSteps)[Name]];
+	};
+}
+
 export const namedTypographyScale = {
 	size: {
 		xs: 12,
@@ -144,28 +182,28 @@ export const namedTypographyScale = {
 
 export const shadowScale = {
 	xs: {
-		shadowColor: '$shadowColor',
+		shadowColor: 'shadow-color',
 		shadowOffset: { width: 0, height: 1 },
 		shadowOpacity: 0.05,
 		shadowRadius: 2,
 		elevation: 1
 	},
 	sm: {
-		shadowColor: '$shadowColor',
+		shadowColor: 'shadow-color',
 		shadowOffset: { width: 0, height: 6 },
 		shadowOpacity: 0.08,
 		shadowRadius: 16,
 		elevation: 2
 	},
 	md: {
-		shadowColor: '$shadowColor',
+		shadowColor: 'shadow-color',
 		shadowOffset: { width: 0, height: 14 },
 		shadowOpacity: 0.12,
 		shadowRadius: 32,
 		elevation: 4
 	},
 	lg: {
-		shadowColor: '$shadowColor',
+		shadowColor: 'shadow-color',
 		shadowOffset: { width: 0, height: 22 },
 		shadowOpacity: 0.18,
 		shadowRadius: 48,

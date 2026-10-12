@@ -1,20 +1,20 @@
-import React from 'react';
-import { Progress as TamaguiProgress } from 'tamagui';
+import {
+	Progress as TamaguiProgress,
+	styled,
+	withStaticProperties
+} from 'tamagui';
 
-type Props = { value: number; max?: number };
-
-export function Progress({ value, max = 100 }: Props) {
-	return (
-		<TamaguiProgress
-			value={value}
-			max={max}
-			backgroundColor="$backgroundSoft"
-			borderColor="$borderColor"
-		>
-			<TamaguiProgress.Indicator
-				animation="quick"
-				backgroundColor="$primary"
-			/>
-		</TamaguiProgress>
-	);
-}
+export const Progress = withStaticProperties(
+	styled(TamaguiProgress, {
+		displayName: 'TwyrProgress',
+		backgroundColor: 'backgroundSoft',
+		borderColor: 'border-color'
+	}),
+	{
+		Indicator: styled(TamaguiProgress.Indicator, {
+			displayName: 'TwyrProgressIndicator',
+			transition: 'quick',
+			backgroundColor: 'primary'
+		})
+	}
+);

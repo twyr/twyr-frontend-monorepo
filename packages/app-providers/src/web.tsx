@@ -9,8 +9,7 @@ import {
 	useMemo,
 	useState
 } from 'react';
-import { ToastProvider } from '@tamagui/toast';
-import { TamaguiProvider, Theme } from 'tamagui';
+import { TamaguiProvider, Theme, Toast } from 'tamagui';
 import {
 	AUTH_SERVER_LOCALE_COOKIE_NAME,
 	fetchLocaleOptions,
@@ -438,7 +437,7 @@ export function TwyrWebProviders({
 						defaultTheme={resolvedTheme}
 					>
 						<Theme name={resolvedTheme}>
-							<ToastProvider>{children}</ToastProvider>
+							<Toast position="top-right">{children}</Toast>
 						</Theme>
 					</TamaguiProvider>
 				</WebPortalContext.Provider>

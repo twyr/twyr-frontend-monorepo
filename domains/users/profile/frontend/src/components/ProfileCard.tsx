@@ -9,9 +9,9 @@ export interface ProfileCardProps {
 export function ProfileCard({ displayName, email }: ProfileCardProps) {
 	return (
 		<Card>
-			<YStack gap="$xs">
+			<YStack gap="1">
 				<Text fontWeight="700">{displayName}</Text>
-				{email ? <Text color="$colorMuted">{email}</Text> : null}
+				{email ? <Text color="colorMuted">{email}</Text> : null}
 			</YStack>
 		</Card>
 	);

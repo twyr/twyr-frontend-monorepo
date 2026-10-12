@@ -39,8 +39,8 @@ import {
 	Switch,
 	Tabs,
 	TextArea,
-	ToastTrigger,
-	ToastViewport,
+	Toast,
+	toast,
 	Tooltip
 } from '@twyr/ui-kit';
 import {
@@ -56,7 +56,7 @@ import {
 	SectionHeader,
 	StatCard
 } from '@twyr/ui-composed';
-import { Paragraph, XStack, YStack } from 'tamagui';
+import { Paragraph, XStack, YStack, Label, styled } from 'tamagui';
 import { getShowcaseCopy } from './copy';
 
 type ShowcasePlatform = 'web' | 'mobile';
@@ -91,7 +91,7 @@ const artifactRows: ArtifactRow[] = [
 		artifact: 'Button',
 		family: 'ui-kit',
 		platform: 'shared',
-		preview: 'Primary, icon, and chromeless actions'
+		preview: 'Primary, icon, and quiet actions'
 	},
 	{
 		artifact: 'Card',
@@ -202,13 +202,31 @@ const artifactRows: ArtifactRow[] = [
 		preview: 'Theme mode switcher for web shell'
 	},
 	{
-		artifact: 'ToastTrigger',
+		artifact: 'Toast',
+		family: 'ui-kit',
+		platform: 'shared',
+		preview: 'Native toast context and compound parts'
+	},
+	{
+		artifact: 'useToastItem',
+		family: 'ui-kit',
+		platform: 'shared',
+		preview: 'Native toast item state for custom renderers'
+	},
+	{
+		artifact: 'useToasts',
+		family: 'ui-kit',
+		platform: 'shared',
+		preview: 'Native toast collection state'
+	},
+	{
+		artifact: 'toast',
 		family: 'ui-kit',
 		platform: 'shared',
 		preview: 'Provider-backed transient feedback'
 	},
 	{
-		artifact: 'ToastViewport',
+		artifact: 'Toast.Viewport',
 		family: 'ui-kit',
 		platform: 'web',
 		preview: 'Toast portal viewport'
@@ -383,28 +401,28 @@ const semanticThemeKeys = [
 	'danger'
 ] as const;
 
-function PreviewColumn({ children }: { children: ReactNode }) {
-	return (
-		<YStack width={360} maxWidth="100%" flexGrow={1} flexShrink={1}>
-			{children}
-		</YStack>
-	);
-}
+const PreviewColumn = styled(YStack, {
+	displayName: 'ShowcasePreviewColumn',
+	width: 360,
+	maxWidth: '100%',
+	flexGrow: 1,
+	flexShrink: 1
+});
 
-function Swatch({ label, value }: { label: string; value: string }) {
+function Swatch({ label, value }: { label: string; value: `#${string}` }) {
 	return (
-		<YStack width={104} gap="$2">
+		<YStack width={104} gap="2">
 			<YStack
 				height={64}
-				borderRadius="$4"
+				borderRadius="4"
 				borderWidth={1}
-				borderColor="$borderColor"
+				borderColor="border-color"
 				backgroundColor={value}
 			/>
-			<Paragraph color="$color" fontWeight="700">
+			<Paragraph color="color" fontWeight="700">
 				{label}
 			</Paragraph>
-			<Paragraph color="$colorMuted" size="$2">
+			<Paragraph color="colorMuted" size="2">
 				{value}
 			</Paragraph>
 		</YStack>
@@ -475,7 +493,7 @@ export function ArtifactShowcaseCatalog({
 	}, []);
 
 	return (
-		<YStack padding="$5" gap="$6">
+		<YStack padding="5" gap="6">
 			<PageHeader
 				eyebrow={copy.page.eyebrow}
 				title={copy.page.title}
@@ -483,12 +501,12 @@ export function ArtifactShowcaseCatalog({
 				actions={headerActions}
 			/>
 
-			<YStack id="overview" gap="$4">
+			<YStack id="overview" gap="4">
 				<SectionHeader
 					title={copy.sections.coverage}
 					description={copy.shell.subtitle}
 				/>
-				<XStack gap="$4" flexWrap="wrap">
+				<XStack gap="4" flexWrap="wrap">
 					<PreviewColumn>
 						<StatCard
 							label="Artifact families"
@@ -516,19 +534,24 @@ export function ArtifactShowcaseCatalog({
 				</XStack>
 			</YStack>
 
-			<YStack id="primitives" gap="$4">
+			<YStack id="primitives" gap="4">
 				<SectionHeader
 					title="Primitive surfaces"
 					description="Core ui-kit controls with enough state to verify styling, interaction, and semantic tokens."
 				/>
-				<XStack gap="$4" flexWrap="wrap">
+				<XStack gap="4" flexWrap="wrap">
 					<PreviewColumn>
-						<Card
-							title="Buttons and card"
-							description="Primary, icon-bearing, and chromeless actions mounted on the shared card surface."
-							footer={<Button chromeless>Secondary trail</Button>}
-						>
-							<XStack gap="$3" flexWrap="wrap">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Buttons and card
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Primary, icon-bearing, and quiet actions
+									mounted on the shared card surface.
+								</Paragraph>
+							</Card.Header>
+							<XStack gap="3" flexWrap="wrap">
 								<Button>Primary action</Button>
 								<Button
 									tone="secondary"
@@ -537,18 +560,27 @@ export function ArtifactShowcaseCatalog({
 									Continue
 								</Button>
 								<Button tone="accent">Accent action</Button>
-								<Button chromeless color="$color">
-									Chromeless action
+								<Button variant="quiet" color="color">
+									Quiet action
 								</Button>
 							</XStack>
+							<Card.Footer>
+								<Button variant="quiet">Secondary trail</Button>
+							</Card.Footer>
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Inputs"
-							description="Single-line and multi-line fields using the shared semantic theme roles."
-						>
-							<YStack gap="$3">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Inputs
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Single-line and multi-line fields using the
+									shared semantic theme roles.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="3">
 								<Input
 									value={formValue}
 									onChangeText={setFormValue}
@@ -563,69 +595,147 @@ export function ArtifactShowcaseCatalog({
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Selections"
-							description="Checkbox, switch, and radio variants with live values."
-						>
-							<YStack gap="$3">
-								<Checkbox
-									id="artifact-checkbox"
-									label="Show design-system diagnostics"
-									checked={checked}
-									onCheckedChange={setChecked}
-								/>
-								<Switch
-									id="artifact-switch"
-									label="Compact mode"
-									checked={switchEnabled}
-									onCheckedChange={setSwitchEnabled}
-								/>
-								<RadioGroup
-									name="artifact-role"
-									label="Default persona"
-									value={selectedRole}
-									onValueChange={setSelectedRole}
-									options={[
-										{
-											label: 'Operator',
-											value: 'operator'
-										},
-										{ label: 'Analyst', value: 'analyst' },
-										{ label: 'Admin', value: 'admin' }
-									]}
-								/>
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Selections
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Checkbox, switch, and radio variants with
+									live values.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="3">
+								<XStack
+									alignItems="center"
+									gap="3"
+									minHeight={44}
+								>
+									<Checkbox
+										id="artifact-checkbox"
+										checked={checked}
+										onCheckedChange={(checked) =>
+											setChecked(checked === true)
+										}
+									>
+										<Checkbox.Indicator>
+											<Paragraph aria-hidden>✓</Paragraph>
+										</Checkbox.Indicator>
+									</Checkbox>
+									<Label htmlFor="artifact-checkbox">
+										Show design-system diagnostics
+									</Label>
+								</XStack>
+								<XStack
+									alignItems="center"
+									gap="3"
+									minHeight={44}
+								>
+									<Switch
+										id="artifact-switch"
+										checked={switchEnabled}
+										onCheckedChange={setSwitchEnabled}
+									>
+										<Switch.Thumb transition="quick" />
+									</Switch>
+									<Label htmlFor="artifact-switch">
+										Compact mode
+									</Label>
+								</XStack>
+								<YStack gap="3">
+									<Label>Default persona</Label>
+									<RadioGroup
+										name="artifact-role"
+										value={selectedRole}
+										onValueChange={setSelectedRole}
+										gap="2"
+									>
+										{[
+											{
+												label: 'Operator',
+												value: 'operator'
+											},
+											{
+												label: 'Analyst',
+												value: 'analyst'
+											},
+											{ label: 'Admin', value: 'admin' }
+										].map((option) => (
+											<XStack
+												key={option.value}
+												alignItems="center"
+												gap="3"
+												minHeight={44}
+											>
+												<RadioGroup.Item
+													value={option.value}
+													id={`artifact-role-${option.value}`}
+													size="md"
+												>
+													<RadioGroup.Indicator />
+												</RadioGroup.Item>
+												<Label
+													htmlFor={`artifact-role-${option.value}`}
+												>
+													{option.label}
+												</Label>
+											</XStack>
+										))}
+									</RadioGroup>
+								</YStack>
 							</YStack>
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Range and status"
-							description="A slider drives progress so both feedback primitives stay visible together."
-						>
-							<YStack gap="$4">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Range and status
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									A slider drives progress so both feedback
+									primitives stay visible together.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
 								<Slider
 									value={sliderValue}
 									onValueChange={setSliderValue}
-								/>
+									width="100%"
+									maxWidth={320}
+								>
+									<Slider.Track>
+										<Slider.TrackActive />
+									</Slider.Track>
+									{sliderValue.map((_, index) => (
+										<Slider.Thumb
+											key={index}
+											index={index}
+											aria-label={`Completion ${index + 1}`}
+										/>
+									))}
+								</Slider>
 								{isMounted ? (
-									<Progress value={progressValue} />
+									<Progress value={progressValue}>
+										<Progress.Indicator />
+									</Progress>
 								) : (
 									<YStack
 										height={12}
-										borderRadius="$pill"
-										backgroundColor="$backgroundSoft"
+										borderRadius="pill"
+										backgroundColor="backgroundSoft"
 										borderWidth={1}
-										borderColor="$borderColor"
+										borderColor="border-color"
 									/>
 								)}
 								<XStack
 									alignItems="center"
-									gap="$3"
+									gap="3"
 									flexWrap="wrap"
 								>
 									<Spinner size="small" />
-									<Spinner size="large" color="$accent" />
-									<Paragraph color="$colorMuted">
+									<Spinner size="large" color="accent" />
+									<Paragraph color="colorMuted">
 										Completion {progressValue}%
 									</Paragraph>
 								</XStack>
@@ -633,42 +743,79 @@ export function ArtifactShowcaseCatalog({
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Identity and icons"
-							description="Avatar fallback and the full shared icon set on a single surface."
-						>
-							<YStack gap="$4">
-								<XStack gap="$3" alignItems="center">
-									<Avatar name="Twyr Platform" size={40} />
-									<Avatar name="Shell Showcase" size={56} />
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Identity and icons
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Avatar fallback and the full shared icon set
+									on a single surface.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
+								<XStack gap="3" alignItems="center">
+									<Avatar
+										size={40}
+										aria-label="Twyr Platform"
+									>
+										<Avatar.Fallback>
+											<Paragraph
+												color="primaryForeground"
+												fontWeight="700"
+											>
+												{'Twyr Platform'
+													.split(' ')
+													.map((part) => part[0])
+													.join('')
+													.slice(0, 2)
+													.toUpperCase()}
+											</Paragraph>
+										</Avatar.Fallback>
+									</Avatar>
+									<Avatar
+										size={56}
+										aria-label="Shell Showcase"
+									>
+										<Avatar.Fallback>
+											<Paragraph
+												color="primaryForeground"
+												fontWeight="700"
+											>
+												{'Shell Showcase'
+													.split(' ')
+													.map((part) => part[0])
+													.join('')
+													.slice(0, 2)
+													.toUpperCase()}
+											</Paragraph>
+										</Avatar.Fallback>
+									</Avatar>
 									<Separator vertical />
-									<Paragraph color="$colorMuted">
+									<Paragraph color="colorMuted">
 										Fallback initials derive from the
 										provided name.
 									</Paragraph>
 								</XStack>
-								<XStack gap="$3" flexWrap="wrap">
-									<SunIcon color="$primary" size={18} />
-									<MoonIcon color="$primary" size={18} />
+								<XStack gap="3" flexWrap="wrap">
+									<SunIcon color="primary" size={18} />
+									<MoonIcon color="primary" size={18} />
 									<DeviceDesktopIcon
-										color="$primary"
+										color="primary"
 										size={18}
 									/>
 									<ChevronDownIcon
-										color="$primary"
+										color="primary"
 										size={18}
 									/>
-									<ArrowRightIcon
-										color="$primary"
-										size={18}
-									/>
-									<BoltIcon color="$primary" size={18} />
+									<ArrowRightIcon color="primary" size={18} />
+									<BoltIcon color="primary" size={18} />
 									<LayoutDashboardIcon
-										color="$primary"
+										color="primary"
 										size={18}
 									/>
 									<ShieldCheckIcon
-										color="$primary"
+										color="primary"
 										size={18}
 									/>
 								</XStack>
@@ -676,126 +823,180 @@ export function ArtifactShowcaseCatalog({
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Navigation primitives"
-							description="Select, tabs, and accordion patterns cover quick traversal and disclosure."
-						>
-							<YStack gap="$4">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Navigation primitives
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Select, tabs, and accordion patterns cover
+									quick traversal and disclosure.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
 								<Select
 									value={selectedSurface}
 									onValueChange={setSelectedSurface}
-									options={[
-										{
-											label: 'Dashboard',
-											value: 'dashboard'
-										},
-										{
-											label: 'Review queue',
-											value: 'review-queue'
-										},
-										{
-											label: 'Audit trail',
-											value: 'audit-trail'
-										}
-									]}
-								/>
+									zIndex={200000}
+								>
+									<Select.Trigger>
+										<Select.Value placeholder="Select an option" />
+										<Select.Icon />
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Viewport>
+											<Select.Group>
+												{[
+													{
+														label: 'Dashboard',
+														value: 'dashboard'
+													},
+													{
+														label: 'Review queue',
+														value: 'review-queue'
+													},
+													{
+														label: 'Audit trail',
+														value: 'audit-trail'
+													}
+												].map((option) => (
+													<Select.Item
+														key={option.value}
+														value={option.value}
+													>
+														<Select.ItemText>
+															{option.label}
+														</Select.ItemText>
+														<Select.ItemIndicator />
+													</Select.Item>
+												))}
+											</Select.Group>
+										</Select.Viewport>
+									</Select.Content>
+								</Select>
 								<Tabs
 									defaultValue="tokens"
-									items={[
-										{
-											key: 'tokens',
-											label: 'Tokens',
-											content: (
-												<Paragraph color="$colorMuted">
-													Spacing, radius, shadow, and
-													typography scales are
-													covered in the design-system
-													section.
-												</Paragraph>
-											)
-										},
-										{
-											key: 'widgets',
-											label: 'Widgets',
-											content: (
-												<Paragraph color="$colorMuted">
-													Composed widgets sit below
-													this section so primitives
-													and assembled surfaces stay
-													distinct.
-												</Paragraph>
-											)
-										},
-										{
-											key: 'shell',
-											label: 'Shell',
-											content: (
-												<Paragraph color="$colorMuted">
-													The page chrome itself is
-													part of the showcase for the
-													current platform.
-												</Paragraph>
-											)
-										}
-									]}
-								/>
+									orientation="horizontal"
+									flexDirection="column"
+								>
+									<Tabs.List gap="2">
+										<Tabs.Tab value="tokens">
+											Tokens
+										</Tabs.Tab>
+										<Tabs.Tab value="widgets">
+											Widgets
+										</Tabs.Tab>
+										<Tabs.Tab value="shell">Shell</Tabs.Tab>
+									</Tabs.List>
+									<Tabs.Content value="tokens" paddingTop="4">
+										<Paragraph color="colorMuted">
+											Spacing, radius, shadow, and
+											typography scales are covered in the
+											design-system section.
+										</Paragraph>
+									</Tabs.Content>
+									<Tabs.Content
+										value="widgets"
+										paddingTop="4"
+									>
+										<Paragraph color="colorMuted">
+											Composed widgets sit below this
+											section so primitives and assembled
+											surfaces stay distinct.
+										</Paragraph>
+									</Tabs.Content>
+									<Tabs.Content value="shell" paddingTop="4">
+										<Paragraph color="colorMuted">
+											The page chrome itself is part of
+											the showcase for the current
+											platform.
+										</Paragraph>
+									</Tabs.Content>
+								</Tabs>
 								<Accordion
-									items={[
-										{
-											id: 'coverage',
-											title: 'What is covered?',
-											content: (
-												<Paragraph color="$colorMuted">
-													Every export from ui-kit,
-													ui-composed, and
-													design-system is either
-													rendered live, listed in the
-													inventory table, or both.
-												</Paragraph>
-											)
-										},
-										{
-											id: 'platform',
-											title: 'What is platform-specific?',
-											content: (
-												<Paragraph color="$colorMuted">
-													ShellFrame, AppSidebar,
-													TopNav, and ThemeToggle are
-													web-specific.
-													MobileThemeToggle is shown
-													on the mobile shell.
-												</Paragraph>
-											)
-										}
-									]}
-								/>
+									type="multiple"
+									overflow="hidden"
+									width="100%"
+								>
+									<Accordion.Item value="coverage">
+										<Accordion.Trigger>
+											<Paragraph>
+												What is covered?
+											</Paragraph>
+										</Accordion.Trigger>
+										<Accordion.Content>
+											<Paragraph color="colorMuted">
+												Every export from ui-kit,
+												ui-composed, and design-system
+												is either rendered live, listed
+												in the inventory table, or both.
+											</Paragraph>
+										</Accordion.Content>
+									</Accordion.Item>
+									<Accordion.Item value="platform">
+										<Accordion.Trigger>
+											<Paragraph>
+												What is platform-specific?
+											</Paragraph>
+										</Accordion.Trigger>
+										<Accordion.Content>
+											<Paragraph color="colorMuted">
+												ShellFrame, AppSidebar, TopNav,
+												and ThemeToggle are
+												web-specific. MobileThemeToggle
+												is shown on the mobile shell.
+											</Paragraph>
+										</Accordion.Content>
+									</Accordion.Item>
+								</Accordion>
 							</YStack>
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Overlays and feedback"
-							description="Popover, tooltip, dialog, sheet, and toast are all wired from the same preview cluster."
-						>
-							<YStack gap="$3">
-								<XStack gap="$3" flexWrap="wrap">
-									<Popover
-										trigger={
-											<Button chromeless color="$color">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Overlays and feedback
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Popover, tooltip, dialog, sheet, and toast
+									are all wired from the same preview cluster.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="3">
+								<XStack gap="3" flexWrap="wrap">
+									<Popover placement="bottom">
+										<Popover.Trigger asChild>
+											<Button
+												variant="quiet"
+												color="color"
+											>
 												Open popover
 											</Button>
-										}
-									>
-										<Paragraph color="$colorMuted">
-											Anchored content inherits the same
-											semantic border and background
-											tokens.
-										</Paragraph>
+										</Popover.Trigger>
+										<Popover.Content>
+											<Paragraph color="colorMuted">
+												Anchored content inherits the
+												same semantic border and
+												background tokens.
+											</Paragraph>
+										</Popover.Content>
 									</Popover>
-									<Tooltip content="Tooltips are rendered through the shared ui-kit wrapper.">
-										<Button chromeless color="$color">
-											Hover hint
-										</Button>
+									<Tooltip>
+										<Tooltip.Trigger asChild>
+											<Button
+												variant="quiet"
+												color="color"
+											>
+												Hover hint
+											</Button>
+										</Tooltip.Trigger>
+										<Tooltip.Content>
+											<Paragraph>
+												Tooltips are rendered through
+												the shared ui-kit wrapper.
+											</Paragraph>
+										</Tooltip.Content>
 									</Tooltip>
 									<Button
 										tone="secondary"
@@ -810,12 +1011,16 @@ export function ArtifactShowcaseCatalog({
 										Open sheet
 									</Button>
 								</XStack>
-								<ToastTrigger
-									title="Showcase toast"
-									message="Transient feedback is available through the shared provider layer."
+								<Button
+									onPress={() =>
+										toast('Showcase toast', {
+											description:
+												'Transient feedback is available through the shared provider layer.'
+										})
+									}
 								>
 									Show toast
-								</ToastTrigger>
+								</Button>
 							</YStack>
 						</Card>
 
@@ -824,40 +1029,87 @@ export function ArtifactShowcaseCatalog({
 								<Dialog
 									open={dialogOpen}
 									onOpenChange={setDialogOpen}
-									title="Promote preview"
-									description="Dialog primitives are mounted in-place so teams can validate overlays without leaving the shell."
-									confirmLabel="Looks good"
-									onConfirm={() => setDialogOpen(false)}
+									modal
 								>
-									<Paragraph color="$colorMuted">
-										Use dialog for explicit confirmation
-										gates and blocking actions.
-									</Paragraph>
+									<Dialog.Portal>
+										<Dialog.Overlay key="overlay" />
+										<Dialog.Content key="content">
+											<Dialog.Title>
+												Promote preview
+											</Dialog.Title>
+											<Dialog.Description>
+												Dialog primitives are mounted
+												in-place so teams can validate
+												overlays without leaving the
+												shell.
+											</Dialog.Description>
+											<Paragraph color="colorMuted">
+												Use dialog for explicit
+												confirmation gates and blocking
+												actions.
+											</Paragraph>
+											<XStack
+												justifyContent="flex-end"
+												gap="3"
+											>
+												<Dialog.Close
+													asChild
+													aria-label={undefined}
+												>
+													<Button variant="quiet">
+														Cancel
+													</Button>
+												</Dialog.Close>
+												<Button
+													onPress={() =>
+														setDialogOpen(false)
+													}
+												>
+													Looks good
+												</Button>
+											</XStack>
+										</Dialog.Content>
+									</Dialog.Portal>
 								</Dialog>
 
 								<Sheet
 									open={sheetOpen}
 									onOpenChange={setSheetOpen}
+									modal
+									position={0}
+									snapPoints={[70]}
+									snapPointsMode="percent"
+									dismissOnOverlayPress
 								>
-									<YStack gap="$3">
-										<Paragraph
-											color="$color"
-											fontWeight="700"
-										>
-											Sheet preview
-										</Paragraph>
-										<Paragraph color="$colorMuted">
-											Use the sheet wrapper for
-											mobile-forward layered content and
-											compact workflows.
-										</Paragraph>
-										<Button
-											tone="neutral"
-											onPress={() => setSheetOpen(false)}
-										>
-											Close sheet
-										</Button>
-									</YStack>
+									<Sheet.Overlay />
+									<Sheet.Container>
+										<Sheet.Background />
+										<Sheet.Handle />
+										<Sheet.ScrollView padding="4">
+											<YStack gap="3">
+												<Paragraph
+													color="color"
+													fontWeight="700"
+												>
+													Sheet preview
+												</Paragraph>
+												<Paragraph color="colorMuted">
+													Use the sheet wrapper for
+													mobile-forward layered
+													content and compact
+													workflows.
+												</Paragraph>
+												<Button
+													tone="neutral"
+													onPress={() =>
+														setSheetOpen(false)
+													}
+												>
+													Close sheet
+												</Button>
+											</YStack>
+										</Sheet.ScrollView>
+									</Sheet.Container>
 								</Sheet>
 							</>
 						) : null}
@@ -865,18 +1117,24 @@ export function ArtifactShowcaseCatalog({
 				</XStack>
 			</YStack>
 
-			<YStack id="composed" gap="$4">
+			<YStack id="composed" gap="4">
 				<SectionHeader
 					title="Composed workflows"
 					description="Higher-level widgets assembled from the primitive layer and ready for bounded-context screens."
 				/>
-				<XStack gap="$4" flexWrap="wrap">
+				<XStack gap="4" flexWrap="wrap">
 					<PreviewColumn>
-						<Card
-							title="Search and commands"
-							description="Combobox and command palette variants for quick navigation and option discovery."
-						>
-							<YStack gap="$4">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Search and commands
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Combobox and command palette variants for
+									quick navigation and option discovery.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
 								<Combobox
 									label="Workspace"
 									value={selectedWorkspace}
@@ -917,11 +1175,17 @@ export function ArtifactShowcaseCatalog({
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Data and empty states"
-							description="Inventory plus a neutral zero-state to verify read-heavy product surfaces."
-						>
-							<YStack gap="$4">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Data and empty states
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Inventory plus a neutral zero-state to
+									verify read-heavy product surfaces.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
 								<EmptyState
 									title="No incidents routed"
 									description="EmptyState stays compact and action-oriented when data has not arrived yet."
@@ -931,11 +1195,17 @@ export function ArtifactShowcaseCatalog({
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Verification and content"
-							description="OTP, date picker, upload scaffold, and editor scaffold cover common app flows."
-						>
-							<YStack gap="$4">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Verification and content
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									OTP, date picker, upload scaffold, and
+									editor scaffold cover common app flows.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
 								<OTPInput
 									value={verificationCode}
 									onChange={setVerificationCode}
@@ -976,28 +1246,34 @@ export function ArtifactShowcaseCatalog({
 				/>
 			</YStack>
 
-			<YStack id="design-system" gap="$4">
+			<YStack id="design-system" gap="4">
 				<SectionHeader
 					title={copy.sections.designSystem}
 					description={copy.shell.subtitle}
 				/>
-				<XStack gap="$4" flexWrap="wrap">
+				<XStack gap="4" flexWrap="wrap">
 					<PreviewColumn>
-						<Card
-							title="Theme roles"
-							description="Light and dark themes expose semantic roles instead of raw color names."
-						>
-							<YStack gap="$4">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Theme roles
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Light and dark themes expose semantic roles
+									instead of raw color names.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
 								{(['light', 'dark'] as const).map(
 									(themeName) => (
-										<YStack key={themeName} gap="$3">
+										<YStack key={themeName} gap="3">
 											<Paragraph
-												color="$color"
+												color="color"
 												fontWeight="700"
 											>
 												{themeName} theme
 											</Paragraph>
-											<XStack gap="$3" flexWrap="wrap">
+											<XStack gap="3" flexWrap="wrap">
 												{semanticThemeKeys.map(
 													(key) => (
 														<Swatch
@@ -1020,20 +1296,26 @@ export function ArtifactShowcaseCatalog({
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Tailwind palette source"
-							description="The design system derives semantic roles from a centralized Tailwind-aligned palette."
-						>
-							<YStack gap="$4">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Tailwind palette source
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									The design system derives semantic roles
+									from a centralized Tailwind-aligned palette.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
 								{paletteFamilies.map((family) => (
-									<YStack key={family.name} gap="$3">
+									<YStack key={family.name} gap="3">
 										<Paragraph
-											color="$color"
+											color="color"
 											fontWeight="700"
 										>
 											{family.name}
 										</Paragraph>
-										<XStack gap="$2" flexWrap="wrap">
+										<XStack gap="2" flexWrap="wrap">
 											{Object.entries(family.shades).map(
 												([shade, value]) => (
 													<Swatch
@@ -1050,13 +1332,20 @@ export function ArtifactShowcaseCatalog({
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Spacing and radius"
-							description="Spatial rhythm and corner treatment stay consistent across platforms through shared scales."
-						>
-							<YStack gap="$4">
-								<YStack gap="$3">
-									<Paragraph color="$color" fontWeight="700">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Spacing and radius
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Spatial rhythm and corner treatment stay
+									consistent across platforms through shared
+									scales.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
+								<YStack gap="3">
+									<Paragraph color="color" fontWeight="700">
 										Spacing scale
 									</Paragraph>
 									{Object.entries(spacing).map(
@@ -1064,10 +1353,10 @@ export function ArtifactShowcaseCatalog({
 											<XStack
 												key={key}
 												alignItems="center"
-												gap="$3"
+												gap="3"
 											>
 												<Paragraph
-													color="$colorMuted"
+													color="colorMuted"
 													width={40}
 												>
 													{key}
@@ -1075,10 +1364,10 @@ export function ArtifactShowcaseCatalog({
 												<YStack
 													height={12}
 													width={Math.max(value, 12)}
-													borderRadius="$pill"
-													backgroundColor="$primary"
+													borderRadius="pill"
+													backgroundColor="primary"
 												/>
-												<Paragraph color="$colorMuted">
+												<Paragraph color="colorMuted">
 													{value}px
 												</Paragraph>
 											</XStack>
@@ -1086,28 +1375,28 @@ export function ArtifactShowcaseCatalog({
 									)}
 								</YStack>
 								<Separator />
-								<YStack gap="$3">
-									<Paragraph color="$color" fontWeight="700">
+								<YStack gap="3">
+									<Paragraph color="color" fontWeight="700">
 										Radius scale
 									</Paragraph>
-									<XStack gap="$3" flexWrap="wrap">
+									<XStack gap="3" flexWrap="wrap">
 										{Object.entries(radius).map(
 											([key, value]) => (
 												<YStack
 													key={key}
 													width={96}
-													gap="$2"
+													gap="2"
 													alignItems="center"
 												>
 													<YStack
 														width={72}
 														height={72}
-														backgroundColor="$backgroundSoft"
+														backgroundColor="backgroundSoft"
 														borderWidth={1}
-														borderColor="$borderColor"
+														borderColor="border-color"
 														borderRadius={value}
 													/>
-													<Paragraph color="$colorMuted">
+													<Paragraph color="colorMuted">
 														{key}: {value}
 													</Paragraph>
 												</YStack>
@@ -1119,20 +1408,26 @@ export function ArtifactShowcaseCatalog({
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Typography, motion, and shadows"
-							description="Visual rhythm is codified so product teams can reuse it instead of redefining it."
-						>
-							<YStack gap="$4">
-								<YStack gap="$3">
-									<Paragraph color="$color" fontWeight="700">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Typography, motion, and shadows
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									Visual rhythm is codified so product teams
+									can reuse it instead of redefining it.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="4">
+								<YStack gap="3">
+									<Paragraph color="color" fontWeight="700">
 										Type scale
 									</Paragraph>
 									{Object.entries(typography.size).map(
 										([key, value]) => (
 											<Paragraph
 												key={key}
-												color="$color"
+												color="color"
 												fontSize={value}
 												lineHeight={
 													typography.lineHeight[
@@ -1146,40 +1441,40 @@ export function ArtifactShowcaseCatalog({
 									)}
 								</YStack>
 								<Separator />
-								<YStack gap="$3">
-									<Paragraph color="$color" fontWeight="700">
+								<YStack gap="3">
+									<Paragraph color="color" fontWeight="700">
 										Motion presets
 									</Paragraph>
-									<Paragraph color="$colorMuted">
+									<Paragraph color="colorMuted">
 										Fast: {motion.fast}ms, Moderate:{' '}
 										{motion.moderate}ms, Slow: {motion.slow}
 										ms.
 									</Paragraph>
-									<Paragraph color="$colorMuted">
+									<Paragraph color="colorMuted">
 										Easing: {motion.easing.productive},{' '}
 										{motion.easing.enter},{' '}
 										{motion.easing.exit}.
 									</Paragraph>
 								</YStack>
 								<Separator />
-								<YStack gap="$3">
-									<Paragraph color="$color" fontWeight="700">
+								<YStack gap="3">
+									<Paragraph color="color" fontWeight="700">
 										Shadow presets
 									</Paragraph>
-									<XStack gap="$3" flexWrap="wrap">
+									<XStack gap="3" flexWrap="wrap">
 										{Object.entries(shadows).map(
 											([key, value]) => (
 												<YStack
 													key={key}
 													width={112}
 													height={96}
-													padding="$3"
-													borderRadius="$4"
-													backgroundColor="$backgroundSoft"
+													padding="3"
+													borderRadius="4"
+													backgroundColor="backgroundSoft"
 													justifyContent="flex-end"
 													{...value}
 												>
-													<Paragraph color="$colorMuted">
+													<Paragraph color="colorMuted">
 														{key}
 													</Paragraph>
 												</YStack>
@@ -1191,19 +1486,26 @@ export function ArtifactShowcaseCatalog({
 						</Card>
 					</PreviewColumn>
 					<PreviewColumn>
-						<Card
-							title="Tamagui config"
-							description="The provider config centralizes the default theme and media breakpoints used across the shell apps."
-						>
-							<YStack gap="$3">
-								<Paragraph color="$colorMuted">
+						<Card>
+							<Card.Header>
+								<Paragraph fontWeight="700" fontSize="6">
+									Tamagui config
+								</Paragraph>
+								<Paragraph color="colorMuted">
+									The provider config centralizes the default
+									theme and media breakpoints used across the
+									shell apps.
+								</Paragraph>
+							</Card.Header>
+							<YStack gap="3">
+								<Paragraph color="colorMuted">
 									Default theme: {configSummary.defaultTheme}
 								</Paragraph>
-								<Paragraph color="$colorMuted">
+								<Paragraph color="colorMuted">
 									Media keys:{' '}
 									{configSummary.mediaKeys.join(', ')}
 								</Paragraph>
-								<Paragraph color="$colorMuted">
+								<Paragraph color="colorMuted">
 									Tokens exposed: color, size, space, radius,
 									and z-index.
 								</Paragraph>
@@ -1213,7 +1515,11 @@ export function ArtifactShowcaseCatalog({
 				</XStack>
 			</YStack>
 
-			{showToastViewport ? <ToastViewport /> : null}
+			{showToastViewport ? (
+				<Toast.Viewport offset={{ top: spacing[8], right: spacing[4] }}>
+					<Toast.List />
+				</Toast.Viewport>
+			) : null}
 		</YStack>
 	);
 }

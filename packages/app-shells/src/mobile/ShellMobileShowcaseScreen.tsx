@@ -7,10 +7,11 @@ export function ShellMobileShowcaseScreen() {
 	const { themeMode, setThemeMode } = useMobileThemeMode();
 
 	return (
-		<YStack flex={1} backgroundColor="$background">
+		<YStack flex={1} backgroundColor="background">
 			<ScrollView flex={1}>
 				<ArtifactShowcaseCatalog
 					platform="mobile"
+					showToastViewport
 					themeControl={
 						<MobileThemeToggle
 							value={themeMode}

@@ -13,11 +13,19 @@ export function RichEditor({ value, onChange, label = 'Rich text' }: Props) {
 		onChange(`${prefix}${value}${suffix}`);
 
 	return (
-		<Card
-			title={label}
-			description="Lexical-ready scaffold with a shared markdown-style fallback for web and mobile."
-		>
-			<XStack gap="$2" flexWrap="wrap">
+		<Card>
+			<Card.Header>
+				{label ? (
+					<Paragraph fontWeight="700" fontSize="6">
+						{label}
+					</Paragraph>
+				) : null}
+				<Paragraph color="colorMuted">
+					Lexical-ready scaffold with a shared markdown-style fallback
+					for web and mobile.
+				</Paragraph>
+			</Card.Header>
+			<XStack gap="2" flexWrap="wrap">
 				<Button tone="secondary" onPress={() => surround('**')}>
 					Bold
 				</Button>
@@ -30,7 +38,7 @@ export function RichEditor({ value, onChange, label = 'Rich text' }: Props) {
 			</XStack>
 			<TextArea value={value} onChangeText={onChange} minHeight={180} />
 			<YStack>
-				<Paragraph color="$colorMuted">
+				<Paragraph color="colorMuted">
 					Use this scaffold to swap in a fuller Lexical web editor
 					later.
 				</Paragraph>

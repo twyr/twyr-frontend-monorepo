@@ -25,7 +25,7 @@ export function ShellFrame({
 	children
 }: Props) {
 	return (
-		<XStack minHeight="100vh" backgroundColor="$background">
+		<XStack minHeight="100vh" backgroundColor="background">
 			<AppSidebar title={sidebarTitle} items={navItems} />
 			<YStack flex={1}>
 				<TopNav
@@ -34,7 +34,7 @@ export function ShellFrame({
 					themeMode={themeMode}
 					onThemeModeChange={onThemeModeChange}
 				/>
-				<YStack flex={1} padding="$5" gap="$5">
+				<YStack flex={1} padding="5" gap="5">
 					{children}
 				</YStack>
 			</YStack>

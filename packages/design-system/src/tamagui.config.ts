@@ -1,16 +1,16 @@
 import { createTamagui } from 'tamagui';
-import { config as baseConfig } from '@tamagui/config/v3';
 import { animations } from './animations';
 import { fonts } from './fonts';
 import { tokens } from './tokens';
 import { themes } from './themes';
+import { sizing } from './sizing';
 
 export const tamaguiConfig = createTamagui({
-	...baseConfig,
 	animations,
 	fonts,
 	tokens,
 	themes,
+	sizing,
 	defaultTheme: 'light',
 	media: {
 		xs: { maxWidth: 660 },
@@ -23,7 +23,12 @@ export const tamaguiConfig = createTamagui({
 		pointerCoarse: { pointer: 'coarse' }
 	},
 	settings: {
-		...baseConfig.settings,
+		allowedStyleValues: 'somewhat-strict-web',
+		addThemeClassName: 'html',
+		styleCompat: 'web',
+		fastSchemeChange: true,
+		shouldAddPrefersColorThemes: true,
+		onlyAllowShorthands: false,
 		defaultFont: 'body'
 	}
 });

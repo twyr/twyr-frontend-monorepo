@@ -39,11 +39,23 @@ export function FileUpload({
 	};
 
 	return (
-		<Card title={title} description={description}>
+		<Card>
+			{title || description ? (
+				<Card.Header>
+					{title ? (
+						<Paragraph fontWeight="700" fontSize="6">
+							{title}
+						</Paragraph>
+					) : null}
+					{description ? (
+						<Paragraph color="colorMuted">{description}</Paragraph>
+					) : null}
+				</Card.Header>
+			) : null}
 			<Button onPress={fakeSelect}>Add sample files</Button>
-			<YStack gap="$2">
+			<YStack gap="2">
 				{files.map((file) => (
-					<Paragraph key={file.name} color="$colorMuted">
+					<Paragraph key={file.name} color="colorMuted">
 						{file.name}
 					</Paragraph>
 				))}

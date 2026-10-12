@@ -23,35 +23,35 @@ Each domain currently contains these bounded contexts:
 ## Architectural Principles
 
 1. **Bounded context first**
-   - Every bounded context is a first-class unit.
-   - A bounded context owns its own frontend micro-frontend, shared contracts, and BFF.
+    - Every bounded context is a first-class unit.
+    - A bounded context owns its own frontend micro-frontend, shared contracts, and BFF.
 
 2. **BFF, not business backend**
-   - The repository does not implement the system-of-record backend.
-   - Each context-specific backend layer is a BFF that:
-     - validates requests
-     - proxies calls to the existing REST backend
-     - aggregates and reshapes responses for the frontend
-     - enforces frontend-facing contracts
+    - The repository does not implement the system-of-record backend.
+    - Each context-specific backend layer is a BFF that:
+        - validates requests
+        - proxies calls to the existing REST backend
+        - aggregates and reshapes responses for the frontend
+        - enforces frontend-facing contracts
 
 3. **Cross-platform UI through Tamagui**
-   - Shared UI primitives are built with Tamagui.
-   - React Native Web is used on web.
-   - DOM-only UI libraries are intentionally excluded from the core architecture.
+    - Shared UI primitives are built with Tamagui.
+    - React Native Web is used on web.
+    - DOM-only UI libraries are intentionally excluded from the core architecture.
 
 4. **Shared design tokens**
-   - The source color palette comes from the Tailwind color configuration already owned by Twyr.
-   - Tamagui tokens are derived from that palette.
-   - All shared components consume those tokens.
+    - The source color palette comes from the Tailwind color configuration already owned by Twyr.
+    - Tamagui tokens are derived from that palette.
+    - All shared components consume those tokens.
 
 5. **Micro-frontend alignment**
-   - On web, bounded contexts are designed to be deployable separately later.
-   - On mobile, bounded contexts are composed at build time through workspace packages.
-   - The shell apps remain thin and orchestration-focused.
+    - On web, bounded contexts are designed to be deployable separately later.
+    - On mobile, bounded contexts are composed at build time through workspace packages.
+    - The shell apps remain thin and orchestration-focused.
 
 6. **No frontend-to-frontend coupling**
-   - One bounded context frontend must never import another bounded context frontend.
-   - Shared behavior must go through shared packages or backend APIs.
+    - One bounded context frontend must never import another bounded context frontend.
+    - Shared behavior must go through shared packages or backend APIs.
 
 ## Repository Shape
 
@@ -93,6 +93,7 @@ packages/
 ### 1. Shell Applications
 
 #### `apps/web-shell`
+
 Responsibilities:
 
 - bootstraps the web app
@@ -101,6 +102,7 @@ Responsibilities:
 - handles web-only concerns such as SEO and server rendering
 
 #### `apps/mobile-shell`
+
 Responsibilities:
 
 - bootstraps the mobile app
@@ -115,6 +117,7 @@ Shells must not contain bounded-context business flows.
 Each bounded context has three parts.
 
 #### `bff/`
+
 The BFF is a proxy and aggregator layer. It must:
 
 - call the existing REST backend
@@ -129,6 +132,7 @@ The BFF must not:
 - contain shared UI code
 
 #### `shared/`
+
 Shared contains the contract surface between the frontend and BFF:
 
 - DTOs
@@ -136,6 +140,7 @@ Shared contains the contract surface between the frontend and BFF:
 - shared request/response types
 
 #### `frontend/`
+
 Frontend contains:
 
 - screens
@@ -146,6 +151,7 @@ Frontend contains:
 ### 3. Shared Packages
 
 #### `packages/design-system`
+
 Contains:
 
 - imported Tailwind color palette
@@ -153,7 +159,23 @@ Contains:
 - Tamagui configuration
 - themes
 
+The design system configures Tamagui V3 directly with Twyr-owned tokens, themes,
+and named control sizes. Theme roles consumed by built-in primitives use V3's
+kebab-case keys. Brand child themes provide the primary palette for native checked
+controls; native text-size names derive from Twyr's existing font scales.
+Shared components and their callers use bare token names and
+per-property conditional values, such as
+`backgroundColor="primary hover:primaryHover press:primaryPress"`.
+The ui-kit primitives expose Tamagui's native props, refs, and compound parts.
+Twyr defaults are applied with `styled()`; unmodified primitives are re-exported.
+Callers compose `Select.Trigger`/`Select.Content`, `Dialog.Portal`/`Dialog.Content`,
+`Sheet.Container`/`Sheet.Background`, and the other native parts directly.
+Labels, option lists, card headings, and action footers belong to their consuming
+screens or composed widgets. Toasts use `Toast.Viewport`, `Toast.List`, and `toast()`;
+tooltips use Tamagui's native trigger/content composition on both platforms.
+
 #### `packages/ui-kit`
+
 Contains low-level reusable UI primitives:
 
 - buttons
@@ -163,6 +185,7 @@ Contains low-level reusable UI primitives:
 - layout wrappers
 
 #### `packages/ui-composed`
+
 Contains higher-order reusable widgets built from Tamagui and companion libraries:
 
 - data tables
@@ -171,6 +194,7 @@ Contains higher-order reusable widgets built from Tamagui and companion librarie
 - list wrappers
 
 #### `packages/core`
+
 Contains cross-cutting non-UI logic:
 
 - result helpers
@@ -179,6 +203,7 @@ Contains cross-cutting non-UI logic:
 - shared utility functions
 
 #### `packages/platform`
+
 Contains platform abstractions:
 
 - storage
@@ -209,6 +234,7 @@ Forbidden:
 ## Naming Rules
 
 ### Folder names
+
 Use `snake_case` for domain and bounded-context folders.
 
 Examples:
@@ -217,6 +243,7 @@ Examples:
 - `session_management`
 
 ### Package names
+
 Use the `@twyr/` scope and kebab-case package names.
 
 Examples:
@@ -228,11 +255,13 @@ Examples:
 ## UI Strategy
 
 ### Foundation
+
 - Tamagui for shared components and layout
 - React Native / React Native Web as the rendering surface
 - Tailwind color palette as token source
 
 ### Companion libraries
+
 - `@tanstack/react-table`
 - `@tanstack/react-query`
 - `react-hook-form`
@@ -269,9 +298,9 @@ Recommended implementation order:
 2. `packages/ui-kit`
 3. `packages/core`
 4. one bounded context end-to-end, starting with:
-   - `users/session_management/shared`
-   - `users/session_management/bff`
-   - `users/session_management/frontend`
+    - `users/session_management/shared`
+    - `users/session_management/bff`
+    - `users/session_management/frontend`
 5. shell integration
 6. remaining bounded contexts
 

@@ -1,34 +1,17 @@
-import React from 'react';
-import { Avatar as TamaguiAvatar, Text } from 'tamagui';
+import { Avatar as TamaguiAvatar, styled, withStaticProperties } from 'tamagui';
 
-type Props = {
-	name: string;
-	src?: string;
-	size?: number;
-};
-
-export function Avatar({ name, src, size = 40 }: Props) {
-	const fallback = name
-		.split(' ')
-		.map((part) => part[0])
-		.join('')
-		.slice(0, 2)
-		.toUpperCase();
-
-	return (
-		<TamaguiAvatar circular size={size}>
-			{src ? (
-				<TamaguiAvatar.Image accessibilityLabel={name} src={src} />
-			) : null}
-			<TamaguiAvatar.Fallback
-				backgroundColor="$primary"
-				justifyContent="center"
-				alignItems="center"
-			>
-				<Text color="$primaryForeground" fontWeight="700">
-					{fallback}
-				</Text>
-			</TamaguiAvatar.Fallback>
-		</TamaguiAvatar>
-	);
-}
+export const Avatar = withStaticProperties(
+	styled(TamaguiAvatar, {
+		displayName: 'TwyrAvatar',
+		borderRadius: 999,
+		overflow: 'hidden'
+	}),
+	{
+		Fallback: styled(TamaguiAvatar.Fallback, {
+			displayName: 'TwyrAvatarFallback',
+			backgroundColor: 'primary',
+			justifyContent: 'center',
+			alignItems: 'center'
+		})
+	}
+);

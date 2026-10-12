@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Image, ImageBackground, StyleSheet, View } from 'react-native';
+import {
+	Image,
+	ImageBackground,
+	ScrollView,
+	StyleSheet,
+	View
+} from 'react-native';
 import { normalizeAppLanguage, type PortalProfileInput } from '@twyr/core';
 import { useTwyrTranslation } from '@twyr/i18n';
-import { Text, YStack } from 'tamagui';
+import { Text, YStack, Paragraph } from 'tamagui';
 import {
 	TwyrMobileProviders,
 	useMobilePortalExperience
@@ -204,7 +210,11 @@ function UsersMobileApp() {
 				style={styles.publicPageBackground}
 				imageStyle={styles.publicPageBackgroundImage}
 			>
-				<View style={styles.publicPageOverlay}>
+				<ScrollView
+					style={styles.publicPageScrollView}
+					contentContainerStyle={styles.publicPageOverlay}
+					keyboardShouldPersistTaps="handled"
+				>
 					<View style={styles.publicPagePanel}>
 						<LoginScreen
 							selectedLanguage={state.language}
@@ -270,7 +280,7 @@ function UsersMobileApp() {
 							}}
 						/>
 					</View>
-				</View>
+				</ScrollView>
 			</ImageBackground>
 		);
 	}
@@ -287,7 +297,7 @@ function UsersMobileApp() {
 				setRoute('dashboard');
 			}}
 		>
-			<YStack flex={1} padding="$4">
+			<YStack flex={1} padding="4">
 				{route === 'profile' ? (
 					<ProfileScreen
 						profile={state.profile}
@@ -364,15 +374,20 @@ function UsersMobileApp() {
 						}}
 					/>
 				) : (
-					<Card
-						title={t('userDashboard.title')}
-						description={t('userDashboard.mobileDescription')}
-					>
-						<Text color="$colorHover">
+					<Card>
+						<Card.Header>
+							<Paragraph fontWeight="700" fontSize="6">
+								{t('userDashboard.title')}
+							</Paragraph>
+							<Paragraph color="colorMuted">
+								{t('userDashboard.mobileDescription')}
+							</Paragraph>
+						</Card.Header>
+						<Text color="color-hover">
 							{t('userDashboard.mobileLanguageDescription')}
 						</Text>
 						{profileError ? (
-							<Text color="$error">{profileError}</Text>
+							<Text color="danger">{profileError}</Text>
 						) : null}
 					</Card>
 				)}
@@ -388,10 +403,13 @@ const styles = StyleSheet.create({
 	publicPageBackgroundImage: {
 		resizeMode: 'cover'
 	},
+	publicPageScrollView: {
+		backgroundColor: 'rgba(2, 6, 23, 0.4)',
+		flex: 1
+	},
 	publicPageOverlay: {
 		alignItems: 'center',
-		backgroundColor: 'rgba(2, 6, 23, 0.4)',
-		flex: 1,
+		flexGrow: 1,
 		justifyContent: 'center',
 		padding: 16
 	},
@@ -409,6 +427,7 @@ const styles = StyleSheet.create({
 		width: '100%'
 	},
 	authLogo: {
+		width: 54,
 		height: 36,
 		resizeMode: 'contain'
 	}

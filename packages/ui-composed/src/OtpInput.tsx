@@ -13,7 +13,7 @@ export function OTPInput({ value, length = 6, onChange }: Props) {
 	const digits = Array.from({ length }, (_, index) => value[index] ?? '');
 
 	return (
-		<XStack gap="$2">
+		<XStack gap="2">
 			{digits.map((digit, index) => (
 				<Input
 					key={index}

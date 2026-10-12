@@ -10,8 +10,7 @@ import {
 	useState
 } from 'react';
 import { useColorScheme } from 'react-native';
-import { ToastProvider } from '@tamagui/toast';
-import { TamaguiProvider, Theme, YStack } from 'tamagui';
+import { TamaguiProvider, Theme, Toast, YStack } from 'tamagui';
 import {
 	fetchLocaleOptions,
 	normalizeAppLanguage,
@@ -336,9 +335,9 @@ export function TwyrMobileProviders({
 						defaultTheme={resolvedTheme}
 					>
 						<Theme key={resolvedTheme} name={resolvedTheme}>
-							<ToastProvider>
+							<Toast position="top-right">
 								<YStack flex={1}>{children}</YStack>
-							</ToastProvider>
+							</Toast>
 						</Theme>
 					</TamaguiProvider>
 				</MobilePortalContext.Provider>

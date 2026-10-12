@@ -23,7 +23,7 @@ function resolveWebIconColor(
 	theme: ReturnType<typeof useTheme>
 ) {
 	if (typeof color === 'string') {
-		if (color.startsWith('$')) {
+		if (color in theme) {
 			return getVariableValue(theme[color as keyof typeof theme]);
 		}
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Card, Input } from '@twyr/ui-kit';
-import { YStack } from 'tamagui';
+import { YStack, Paragraph } from 'tamagui';
 
 type CommandItem = {
 	id: string;
@@ -24,20 +24,28 @@ export function CommandPalette({ title = 'Quick actions', items }: Props) {
 	});
 
 	return (
-		<Card
-			title={title}
-			description="Cross-platform command palette scaffold for quick action discovery."
-		>
+		<Card>
+			<Card.Header>
+				{title ? (
+					<Paragraph fontWeight="700" fontSize="6">
+						{title}
+					</Paragraph>
+				) : null}
+				<Paragraph color="colorMuted">
+					Cross-platform command palette scaffold for quick action
+					discovery.
+				</Paragraph>
+			</Card.Header>
 			<Input
 				value={query}
 				onChangeText={setQuery}
 				placeholder="Search actions..."
 			/>
-			<YStack gap="$2">
+			<YStack gap="2">
 				{filtered.map((item) => (
 					<Button
 						key={item.id}
-						chromeless
+						variant="quiet"
 						justifyContent="flex-start"
 						onPress={item.onSelect}
 					>

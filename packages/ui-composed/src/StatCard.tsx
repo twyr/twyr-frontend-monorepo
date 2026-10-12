@@ -9,34 +9,41 @@ type Props = {
 };
 
 const toneMap = {
-	primary: '$primarySoft',
-	accent: '$accentSoft',
-	neutral: '$backgroundMuted'
+	primary: 'primarySoft',
+	accent: 'accentSoft',
+	neutral: 'backgroundMuted'
 } as const;
 
 export function StatCard({ label, value, hint, tone = 'neutral' }: Props) {
 	return (
-		<Card title={label}>
-			<YStack gap="$3">
-				<XStack alignItems="baseline" gap="$2">
-					<Paragraph color="$color" fontSize={36} fontWeight="800">
+		<Card>
+			{label ? (
+				<Card.Header>
+					{label ? (
+						<Paragraph fontWeight="700" fontSize="6">
+							{label}
+						</Paragraph>
+					) : null}
+				</Card.Header>
+			) : null}
+			<YStack gap="3">
+				<XStack alignItems="baseline" gap="2">
+					<Paragraph color="color" fontSize={36} fontWeight="800">
 						{value}
 					</Paragraph>
 					<YStack
-						paddingHorizontal="$2"
-						paddingVertical="$1"
+						paddingHorizontal="2"
+						paddingVertical="1"
 						// eslint-disable-next-line security/detect-object-injection
 						backgroundColor={toneMap[tone]}
-						borderRadius="$pill"
+						borderRadius="pill"
 					>
-						<Paragraph color="$colorMuted" fontWeight="700">
+						<Paragraph color="colorMuted" fontWeight="700">
 							{tone}
 						</Paragraph>
 					</YStack>
 				</XStack>
-				{hint ? (
-					<Paragraph color="$colorMuted">{hint}</Paragraph>
-				) : null}
+				{hint ? <Paragraph color="colorMuted">{hint}</Paragraph> : null}
 			</YStack>
 		</Card>
 	);

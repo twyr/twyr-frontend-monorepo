@@ -21,7 +21,7 @@ import {
 } from '@twyr/core';
 import { useLocalizedPageRequests } from '@twyr/app-providers/src/page-requests';
 import { useTwyrTranslation } from '@twyr/i18n';
-import { Paragraph, Text, XStack, YStack } from 'tamagui';
+import { Paragraph, Text, XStack, YStack, styled } from 'tamagui';
 import { DatePicker } from './DatePicker';
 
 type ProfileName = {
@@ -489,26 +489,30 @@ export function ProfileEditor({
 	};
 
 	return (
-		<YStack gap="$5">
-			<YStack gap="$2">
-				<Text fontSize="$10" fontWeight="700" color="$color">
+		<YStack gap="5">
+			<YStack gap="2">
+				<Text fontSize="9" fontWeight="700" color="color">
 					{title}
 				</Text>
-				<Text color="$colorHover">{description}</Text>
+				<Text color="color-hover">{description}</Text>
 			</YStack>
 
-			<Card
-				title={nameCardTitle}
-				description={nameCardDescription}
-				footer={
-					<CardFooter
-						dirty={isNameDirty}
-						onCancel={() => setNameDraft(savedProfile.names)}
-						onSave={saveNames}
-					/>
-				}
-			>
-				<XStack gap="$3" flexWrap="wrap" alignItems="flex-end">
+			<Card>
+				{nameCardTitle || nameCardDescription ? (
+					<Card.Header>
+						{nameCardTitle ? (
+							<Paragraph fontWeight="700" fontSize="6">
+								{nameCardTitle}
+							</Paragraph>
+						) : null}
+						{nameCardDescription ? (
+							<Paragraph color="colorMuted">
+								{nameCardDescription}
+							</Paragraph>
+						) : null}
+					</Card.Header>
+				) : null}
+				<XStack gap="3" flexWrap="wrap" alignItems="flex-end">
 					<NameField
 						label={t('common.labels.firstName')}
 						value={primaryName.firstName}
@@ -538,32 +542,37 @@ export function ProfileEditor({
 						}
 					/>
 				</XStack>
+				<Card.Footer>
+					<CardFooter
+						dirty={isNameDirty}
+						onCancel={() => setNameDraft(savedProfile.names)}
+						onSave={saveNames}
+					/>
+				</Card.Footer>
 			</Card>
 
-			<Card
-				title={demographicsCardTitle}
-				description={demographicsCardDescription}
-				footer={
-					<CardFooter
-						dirty={isDemographicsDirty}
-						onCancel={() => {
-							setDemographicsDraft({
-								genderId: savedProfile.genderId,
-								dateOfBirth: savedProfile.dateOfBirth
-							});
-						}}
-						onSave={saveDemographics}
-					/>
-				}
-			>
-				<XStack gap="$3" flexWrap="wrap" alignItems="flex-end">
+			<Card>
+				{demographicsCardTitle || demographicsCardDescription ? (
+					<Card.Header>
+						{demographicsCardTitle ? (
+							<Paragraph fontWeight="700" fontSize="6">
+								{demographicsCardTitle}
+							</Paragraph>
+						) : null}
+						{demographicsCardDescription ? (
+							<Paragraph color="colorMuted">
+								{demographicsCardDescription}
+							</Paragraph>
+						) : null}
+					</Card.Header>
+				) : null}
+				<XStack gap="3" flexWrap="wrap" alignItems="flex-end">
 					<YStack
-						width="32%"
+						width={{ default: '32%', md: '100%' }}
 						minWidth={220}
-						gap="$2"
-						$md={{ width: '100%' }}
+						gap="2"
 					>
-						<Paragraph size="$2" color="$colorMuted">
+						<Paragraph size="2" color="colorMuted">
 							{t('common.labels.gender')}
 						</Paragraph>
 						<Select
@@ -574,26 +583,52 @@ export function ProfileEditor({
 									genderId: value
 								}));
 							}}
-							options={[
-								{
-									label: t('profileEditor.unspecified'),
-									value: ''
-								},
-								...genderOptions.map((option) => ({
-									label: option.label,
-									value: option.id
-								}))
-							]}
-							placeholder={t('common.placeholders.gender')}
-						/>
+							zIndex={200000}
+						>
+							<Select.Trigger>
+								<Select.Value
+									placeholder={t(
+										'common.placeholders.gender'
+									)}
+								/>
+								<Select.Icon />
+							</Select.Trigger>
+							<Select.Content>
+								<Select.Viewport>
+									<Select.Group>
+										{[
+											{
+												label: t(
+													'profileEditor.unspecified'
+												),
+												value: ''
+											},
+											...genderOptions.map((option) => ({
+												label: option.label,
+												value: option.id
+											}))
+										].map((option) => (
+											<Select.Item
+												key={option.value}
+												value={option.value}
+											>
+												<Select.ItemText>
+													{option.label}
+												</Select.ItemText>
+												<Select.ItemIndicator />
+											</Select.Item>
+										))}
+									</Select.Group>
+								</Select.Viewport>
+							</Select.Content>
+						</Select>
 					</YStack>
 					<YStack
-						width="32%"
+						width={{ default: '32%', md: '100%' }}
 						minWidth={220}
-						gap="$2"
-						$md={{ width: '100%' }}
+						gap="2"
 					>
-						<Paragraph size="$2" color="$colorMuted">
+						<Paragraph size="2" color="colorMuted">
 							{t('common.labels.dateOfBirth')}
 						</Paragraph>
 						<DatePicker
@@ -608,20 +643,43 @@ export function ProfileEditor({
 						/>
 					</YStack>
 				</XStack>
+				<Card.Footer>
+					<CardFooter
+						dirty={isDemographicsDirty}
+						onCancel={() => {
+							setDemographicsDraft({
+								genderId: savedProfile.genderId,
+								dateOfBirth: savedProfile.dateOfBirth
+							});
+						}}
+						onSave={saveDemographics}
+					/>
+				</Card.Footer>
 			</Card>
 
-			<YStack gap="$4">
+			<YStack gap="4">
 				<YStack width="100%">
-					<Card
-						title={localeCardTitle}
-						description={localeCardDescription}
-					>
-						<YStack gap="$4">
-							<YStack gap="$2">
-								<Paragraph size="$2" color="$colorMuted">
+					<Card>
+						{localeCardTitle || localeCardDescription ? (
+							<Card.Header>
+								{localeCardTitle ? (
+									<Paragraph fontWeight="700" fontSize="6">
+										{localeCardTitle}
+									</Paragraph>
+								) : null}
+								{localeCardDescription ? (
+									<Paragraph color="colorMuted">
+										{localeCardDescription}
+									</Paragraph>
+								) : null}
+							</Card.Header>
+						) : null}
+						<YStack gap="4">
+							<YStack gap="2">
+								<Paragraph size="2" color="colorMuted">
 									{t('common.labels.availableLocales')}
 								</Paragraph>
-								<XStack gap="$2" flexWrap="wrap">
+								<XStack gap="2" flexWrap="wrap">
 									{languageOptions.map((option) => {
 										const selectedLocale =
 											localesDraft.find(
@@ -648,7 +706,7 @@ export function ProfileEditor({
 												}}
 											>
 												<XStack
-													gap="$2"
+													gap="2"
 													alignItems="center"
 												>
 													<Text>{option.label}</Text>
@@ -666,76 +724,83 @@ export function ProfileEditor({
 										return (
 											<Popover
 												key={option.code}
-												trigger={localeButton}
-												contentProps={{
-													padding: '$2',
-													gap: '$2'
-												}}
+												placement="bottom"
 											>
-												<YStack gap="$2">
-													<Button
-														tone="neutral"
-														onPress={() => {
-															void toggleLocale(
-																option.code,
-																false
-															);
-														}}
-													>
-														{t(
-															'common.actions.deselect'
-														)}
-													</Button>
-													<Button
-														tone="neutral"
-														disabled={
-															selectedLocale.isPrimary
-														}
-														opacity={
-															selectedLocale.isPrimary
-																? 0.45
-																: 1
-														}
-														onPress={() => {
-															void makePrimaryLocale(
-																selectedLocale
-															);
-														}}
-													>
-														{t(
-															'common.actions.makePrimary'
-														)}
-													</Button>
-												</YStack>
+												<Popover.Trigger asChild>
+													{localeButton}
+												</Popover.Trigger>
+												<Popover.Content
+													padding="2"
+													gap="2"
+												>
+													<YStack gap="2">
+														<Button
+															tone="neutral"
+															onPress={() => {
+																void toggleLocale(
+																	option.code,
+																	false
+																);
+															}}
+														>
+															{t(
+																'common.actions.deselect'
+															)}
+														</Button>
+														<Button
+															tone="neutral"
+															disabled={
+																selectedLocale.isPrimary
+															}
+															opacity={
+																selectedLocale.isPrimary
+																	? 0.45
+																	: 1
+															}
+															onPress={() => {
+																void makePrimaryLocale(
+																	selectedLocale
+																);
+															}}
+														>
+															{t(
+																'common.actions.makePrimary'
+															)}
+														</Button>
+													</YStack>
+												</Popover.Content>
 											</Popover>
 										);
 									})}
 								</XStack>
 							</YStack>
 							{localesError ? (
-								<Text color="$danger">{localesError}</Text>
+								<Text color="danger">{localesError}</Text>
 							) : null}
 						</YStack>
 					</Card>
 				</YStack>
 
 				<YStack width="100%">
-					<Card
-						title={contactCardTitle}
-						description={contactCardDescription}
-						footer={
-							<Button
-								tone="primary"
-								onPress={() => setContactDialogOpen(true)}
-							>
-								{t('common.actions.add')}
-							</Button>
-						}
-					>
+					<Card>
+						{contactCardTitle || contactCardDescription ? (
+							<Card.Header>
+								{contactCardTitle ? (
+									<Paragraph fontWeight="700" fontSize="6">
+										{contactCardTitle}
+									</Paragraph>
+								) : null}
+								{contactCardDescription ? (
+									<Paragraph color="colorMuted">
+										{contactCardDescription}
+									</Paragraph>
+								) : null}
+							</Card.Header>
+						) : null}
 						<YStack
 							borderWidth={1}
-							borderColor="$borderColor"
-							borderRadius="$4"
+							borderColor="border-color"
+							borderRadius="4"
 							overflow="hidden"
 						>
 							<ContactTableHeader />
@@ -761,8 +826,16 @@ export function ProfileEditor({
 							))}
 						</YStack>
 						{contactsError ? (
-							<Text color="$danger">{contactsError}</Text>
+							<Text color="danger">{contactsError}</Text>
 						) : null}
+						<Card.Footer>
+							<Button
+								tone="primary"
+								onPress={() => setContactDialogOpen(true)}
+							>
+								{t('common.actions.add')}
+							</Button>
+						</Card.Footer>
 					</Card>
 				</YStack>
 			</YStack>
@@ -776,54 +849,100 @@ export function ProfileEditor({
 
 					setContactDialogOpen(open);
 				}}
-				title={t('common.actions.add')}
-				description={t('profileEditor.addContactDescription')}
-				confirmLabel={t('common.actions.save')}
-				cancelLabel={t('common.actions.cancel')}
-				confirmDisabled={
-					!selectedContactType?.name ||
-					!selectedContactType.id ||
-					newContactValue.trim().length === 0
-				}
-				onConfirm={() => {
-					void addContact();
-				}}
+				modal
 			>
-				<YStack gap="$3">
-					<YStack gap="$2">
-						<Paragraph size="$2" color="$colorMuted">
-							{t('profileEditor.contactType')}
-						</Paragraph>
-						<Select
-							value={selectedContactType?.name ?? ''}
-							onValueChange={(value) => {
-								setSelectedContactType(
-									contactTypeOptions.find(
-										(option) => option.name === value
-									) ?? null
-								);
-							}}
-							options={contactTypeOptions.map((option) => ({
-								label: option.displayName,
-								value: option.name
-							}))}
-							placeholder={t('common.placeholders.contactType')}
-						/>
-					</YStack>
-					<YStack gap="$2">
-						<Paragraph size="$2" color="$colorMuted">
-							{t('profileEditor.contactValue')}
-						</Paragraph>
-						<Input
-							value={newContactValue}
-							onChangeText={setNewContactValue}
-							placeholder={t('common.placeholders.contactValue')}
-						/>
-					</YStack>
-					{contactDialogError ? (
-						<Text color="$danger">{contactDialogError}</Text>
-					) : null}
-				</YStack>
+				<Dialog.Portal>
+					<Dialog.Overlay key="overlay" />
+					<Dialog.Content key="content">
+						<Dialog.Title>{t('common.actions.add')}</Dialog.Title>
+						<Dialog.Description>
+							{t('profileEditor.addContactDescription')}
+						</Dialog.Description>
+						<YStack gap="3">
+							<YStack gap="2">
+								<Paragraph size="2" color="colorMuted">
+									{t('profileEditor.contactType')}
+								</Paragraph>
+								<Select
+									value={selectedContactType?.name ?? ''}
+									onValueChange={(value) => {
+										setSelectedContactType(
+											contactTypeOptions.find(
+												(option) =>
+													option.name === value
+											) ?? null
+										);
+									}}
+									zIndex={200000}
+								>
+									<Select.Trigger>
+										<Select.Value
+											placeholder={t(
+												'common.placeholders.contactType'
+											)}
+										/>
+										<Select.Icon />
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Viewport>
+											<Select.Group>
+												{contactTypeOptions.map(
+													(option) => (
+														<Select.Item
+															key={option.name}
+															value={option.name}
+														>
+															<Select.ItemText>
+																{
+																	option.displayName
+																}
+															</Select.ItemText>
+															<Select.ItemIndicator />
+														</Select.Item>
+													)
+												)}
+											</Select.Group>
+										</Select.Viewport>
+									</Select.Content>
+								</Select>
+							</YStack>
+							<YStack gap="2">
+								<Paragraph size="2" color="colorMuted">
+									{t('profileEditor.contactValue')}
+								</Paragraph>
+								<Input
+									value={newContactValue}
+									onChangeText={setNewContactValue}
+									placeholder={t(
+										'common.placeholders.contactValue'
+									)}
+								/>
+							</YStack>
+							{contactDialogError ? (
+								<Text color="danger">{contactDialogError}</Text>
+							) : null}
+						</YStack>
+						<XStack justifyContent="flex-end" gap="3">
+							<Dialog.Close asChild aria-label={undefined}>
+								<Button variant="quiet">
+									{t('common.actions.cancel')}
+								</Button>
+							</Dialog.Close>
+							<Button
+								disabled={
+									!selectedContactType?.name ||
+									!selectedContactType.id ||
+									newContactValue.trim().length === 0
+								}
+								onPress={() => {
+									void addContact();
+								}}
+							>
+								{t('common.actions.save')}
+							</Button>
+						</XStack>
+					</Dialog.Content>
+				</Dialog.Portal>
 			</Dialog>
 		</YStack>
 	);
@@ -839,8 +958,8 @@ function NameField({
 	onChangeText: (value: string) => void;
 }) {
 	return (
-		<YStack width="24%" minWidth={180} $md={{ width: '100%' }}>
-			<Paragraph size="$2" color="$colorMuted">
+		<YStack width={{ default: '24%', md: '100%' }} minWidth={180}>
+			<Paragraph size="2" color="colorMuted">
 				{label}
 			</Paragraph>
 			<Input
@@ -863,7 +982,7 @@ function CardFooter({
 }) {
 	const { t } = useTwyrTranslation();
 	return (
-		<XStack gap="$2">
+		<XStack gap="2">
 			<Button
 				tone="neutral"
 				disabled={!dirty}
@@ -888,30 +1007,30 @@ function ContactTableHeader() {
 	const { t } = useTwyrTranslation();
 	return (
 		<XStack
-			paddingHorizontal="$3"
-			paddingVertical="$2"
+			paddingHorizontal="3"
+			paddingVertical="2"
 			borderBottomWidth={1}
-			borderColor="$borderColor"
-			backgroundColor="$backgroundSoft"
+			borderColor="border-color"
+			backgroundColor="backgroundSoft"
 			alignItems="center"
 		>
 			<TableCell width="22%">
-				<Paragraph size="$2" fontWeight="700">
+				<Paragraph size="2" fontWeight="700">
 					{t('profileEditor.type')}
 				</Paragraph>
 			</TableCell>
 			<TableCell width="44%">
-				<Paragraph size="$2" fontWeight="700">
+				<Paragraph size="2" fontWeight="700">
 					{t('common.labels.contacts')}
 				</Paragraph>
 			</TableCell>
 			<TableCell width="16%">
-				<Paragraph size="$2" fontWeight="700">
+				<Paragraph size="2" fontWeight="700">
 					{t('profileEditor.verified')}
 				</Paragraph>
 			</TableCell>
 			<TableCell width="18%" alignItems="flex-end">
-				<Paragraph size="$2" fontWeight="700">
+				<Paragraph size="2" fontWeight="700">
 					{t('common.labels.actions')}
 				</Paragraph>
 			</TableCell>
@@ -933,10 +1052,10 @@ function ContactTableRow({
 	const { t } = useTwyrTranslation();
 	return (
 		<XStack
-			paddingHorizontal="$3"
-			paddingVertical="$3"
+			paddingHorizontal="3"
+			paddingVertical="3"
 			borderBottomWidth={1}
-			borderColor="$borderColor"
+			borderColor="border-color"
 			alignItems="center"
 		>
 			<TableCell width="22%">
@@ -953,40 +1072,59 @@ function ContactTableRow({
 				</Text>
 			</TableCell>
 			<TableCell width="18%" alignItems="flex-end">
-				<XStack gap="$1" alignItems="center">
+				<XStack gap="1" alignItems="center">
 					{contact.isPrimary ? (
-						<Tooltip content={t('common.tooltips.primaryContact')}>
-							<YStack>
-								<StarFilledIcon />
-							</YStack>
+						<Tooltip>
+							<Tooltip.Trigger asChild>
+								<YStack>
+									<StarFilledIcon />
+								</YStack>
+							</Tooltip.Trigger>
+							<Tooltip.Content>
+								<Paragraph>
+									{t('common.tooltips.primaryContact')}
+								</Paragraph>
+							</Tooltip.Content>
 						</Tooltip>
 					) : (
 						<>
-							<Tooltip content={t('common.tooltips.makePrimary')}>
-								<Button
-									chromeless
-									padding={0}
-									minWidth={32}
-									height={32}
-									aria-label={`Make ${contact.value} primary`}
-									onPress={onMakePrimary}
-								>
-									<StarIcon />
-								</Button>
+							<Tooltip>
+								<Tooltip.Trigger asChild>
+									<Button
+										variant="quiet"
+										padding={0}
+										minWidth={32}
+										height={32}
+										aria-label={`Make ${contact.value} primary`}
+										onPress={onMakePrimary}
+									>
+										<StarIcon />
+									</Button>
+								</Tooltip.Trigger>
+								<Tooltip.Content>
+									<Paragraph>
+										{t('common.tooltips.makePrimary')}
+									</Paragraph>
+								</Tooltip.Content>
 							</Tooltip>
-							<Tooltip
-								content={t('common.tooltips.deleteContact')}
-							>
-								<Button
-									chromeless
-									padding={0}
-									minWidth={32}
-									height={32}
-									aria-label={`Delete ${contact.value}`}
-									onPress={onDelete}
-								>
-									<TrashIcon />
-								</Button>
+							<Tooltip>
+								<Tooltip.Trigger asChild>
+									<Button
+										variant="quiet"
+										padding={0}
+										minWidth={32}
+										height={32}
+										aria-label={`Delete ${contact.value}`}
+										onPress={onDelete}
+									>
+										<TrashIcon />
+									</Button>
+								</Tooltip.Trigger>
+								<Tooltip.Content>
+									<Paragraph>
+										{t('common.tooltips.deleteContact')}
+									</Paragraph>
+								</Tooltip.Content>
 							</Tooltip>
 						</>
 					)}
@@ -996,21 +1134,11 @@ function ContactTableRow({
 	);
 }
 
-function TableCell({
-	children,
-	width,
-	alignItems = 'flex-start'
-}: {
-	children: React.ReactNode;
-	width: string;
-	alignItems?: 'flex-start' | 'center' | 'flex-end';
-}) {
-	return (
-		<YStack width={width} paddingRight="$2" alignItems={alignItems}>
-			{children}
-		</YStack>
-	);
-}
+const TableCell = styled(YStack, {
+	displayName: 'ProfileTableCell',
+	paddingRight: '2',
+	alignItems: 'flex-start'
+});
 
 function formatContactType(typeName: string) {
 	if (typeName.length === 0) {

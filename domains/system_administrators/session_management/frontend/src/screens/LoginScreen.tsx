@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
 	fetchCountryCodeOptions,
 	formatCountryCodeOptionLabel,
@@ -9,7 +9,7 @@ import {
 import { useLocalizedPageRequests } from '@twyr/app-providers/src/page-requests';
 import { useTwyrTranslation } from '@twyr/i18n';
 import { Button, Card, Input, Select } from '@twyr/ui-kit';
-import { Text, XStack, YStack } from 'tamagui';
+import { Text, YStack } from 'tamagui';
 
 type LanguageOption = {
 	code: string;
@@ -24,7 +24,6 @@ type Props = {
 	login: (phoneNumber: string, otp: string) => Promise<void>;
 	onLanguageChange: (language: AppLanguageCode) => void;
 	onLoginSuccess?: () => void;
-	headerLogo?: ReactNode;
 };
 
 type MessageTone = 'error' | 'success';
@@ -36,8 +35,7 @@ export function LoginScreen({
 	requestOtp,
 	login,
 	onLanguageChange,
-	onLoginSuccess,
-	headerLogo
+	onLoginSuccess
 }: Props) {
 	const { t } = useTwyrTranslation();
 	const { runRequest, unregisterRequest } =
@@ -99,40 +97,44 @@ export function LoginScreen({
 	}, [countryOptionsEndpoint, runRequest, unregisterRequest]);
 
 	return (
-		<YStack flex={1} justifyContent="center" padding="$5">
-			<YStack maxWidth={760} width="100%" alignSelf="center" gap="$5">
+		<YStack flexGrow={0} flexShrink={0} justifyContent="center" padding="5">
+			<YStack maxWidth={760} width="100%" alignSelf="center" gap="5">
 				<Card>
-					<YStack gap="$3">
-						<XStack
-							alignItems="center"
-							backgroundColor="rgba(2, 6, 23, 0.7)"
-							borderBottomColor="rgba(255, 255, 255, 0.05)"
-							borderBottomWidth={1}
-							borderRadius="$3"
-							flexWrap="wrap"
-							gap="$3"
-							justifyContent="space-between"
-							paddingHorizontal="$3"
-							paddingVertical="$2"
-						>
-							{headerLogo ?? null}
-							<Button tone="primary" onPress={resetMessage}>
-								{t('common.actions.login')}
-							</Button>
-						</XStack>
-
-						<YStack gap="$4">
+					<YStack gap="3">
+						<YStack gap="4">
 							<Select
 								value={selectedLanguage}
 								onValueChange={(value) =>
 									onLanguageChange(value as AppLanguageCode)
 								}
-								options={languageOptions.map((option) => ({
-									label: option.label,
-									value: option.code
-								}))}
-								placeholder={t('common.placeholders.language')}
-							/>
+								zIndex={200000}
+							>
+								<Select.Trigger>
+									<Select.Value
+										placeholder={t(
+											'common.placeholders.language'
+										)}
+									/>
+									<Select.Icon />
+								</Select.Trigger>
+								<Select.Content>
+									<Select.Viewport>
+										<Select.Group>
+											{languageOptions.map((option) => (
+												<Select.Item
+													key={option.code}
+													value={option.code}
+												>
+													<Select.ItemText>
+														{option.label}
+													</Select.ItemText>
+													<Select.ItemIndicator />
+												</Select.Item>
+											))}
+										</Select.Group>
+									</Select.Viewport>
+								</Select.Content>
+							</Select>
 							<PhoneNumberRow
 								countryCode={loginCountryCode}
 								onCountryCodeChange={setLoginCountryCode}
@@ -211,8 +213,8 @@ export function LoginScreen({
 							<Text
 								color={
 									message.tone === 'error'
-										? '$error'
-										: '$success'
+										? 'danger'
+										: 'success'
 								}
 							>
 								{message.text}
@@ -240,14 +242,37 @@ function PhoneNumberRow({
 }) {
 	const { t } = useTwyrTranslation();
 	return (
-		<YStack gap="$3" width="100%">
+		<YStack gap="3" width="100%">
 			<YStack width="100%">
 				<Select
 					value={countryCode}
 					onValueChange={onCountryCodeChange}
-					options={countrySelectOptions}
-					placeholder={t('common.placeholders.country')}
-				/>
+					zIndex={200000}
+				>
+					<Select.Trigger>
+						<Select.Value
+							placeholder={t('common.placeholders.country')}
+						/>
+						<Select.Icon />
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Viewport>
+							<Select.Group>
+								{countrySelectOptions.map((option) => (
+									<Select.Item
+										key={option.value}
+										value={option.value}
+									>
+										<Select.ItemText>
+											{option.label}
+										</Select.ItemText>
+										<Select.ItemIndicator />
+									</Select.Item>
+								))}
+							</Select.Group>
+						</Select.Viewport>
+					</Select.Content>
+				</Select>
 			</YStack>
 			<YStack width="100%">
 				<Input

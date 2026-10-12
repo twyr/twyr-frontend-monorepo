@@ -4,7 +4,7 @@ import { Text, YStack } from 'tamagui';
 export function LoginForm() {
 	return (
 		<Card>
-			<YStack gap="$sm">
+			<YStack gap="3">
 				<Text fontWeight="700">Login</Text>
 				<Input placeholder="Mobile number or email" />
 				<Input placeholder="OTP" secureTextEntry />

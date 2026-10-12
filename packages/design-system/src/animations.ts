@@ -1,4 +1,4 @@
-import { createAnimations } from '@tamagui/animations-css';
+import { createAnimations } from '@tamagui/animations-css/extras';
 import { motion } from './motion';
 
 export const animations = createAnimations({

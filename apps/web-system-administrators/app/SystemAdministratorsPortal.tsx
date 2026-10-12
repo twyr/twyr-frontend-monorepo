@@ -15,7 +15,7 @@ import { SystemAdministratorWebShell } from '@twyr/app-shells/src/web/SystemAdmi
 import { ProfileScreen } from '@twyr/system-administrators-profile-frontend/src/screens/ProfileScreen';
 import { LoginScreen } from '@twyr/system-administrators-session-management-frontend/src/screens/LoginScreen';
 import { Card } from '@twyr/ui-kit';
-import { Text, XStack, YStack } from 'tamagui';
+import { Text, XStack, YStack, Paragraph } from 'tamagui';
 
 type Props = {
 	view: 'dashboard' | 'profile' | 'session-management';
@@ -180,16 +180,6 @@ export function SystemAdministratorsPortal({
 									setLanguage(loginResult.primaryLocale);
 								}
 							}}
-							headerLogo={
-								<img
-									alt={t('common.appName')}
-									src="/auth/public-page-logo.png"
-									style={{
-										height: 36,
-										objectFit: 'contain'
-									}}
-								/>
-							}
 							onLanguageChange={setLanguage}
 							onLoginSuccess={() => {
 								router.push('/');
@@ -324,31 +314,43 @@ function SystemAdministratorsDashboard({
 }) {
 	const { t } = useTwyrTranslation();
 	return (
-		<YStack gap="$5">
-			<YStack gap="$2">
-				<Text fontSize="$10" fontWeight="700" color="$color">
+		<YStack gap="5">
+			<YStack gap="2">
+				<Text fontSize="9" fontWeight="700" color="color">
 					{view === 'dashboard'
 						? t('adminDashboard.title')
 						: t('adminDashboard.sessionManagement')}
 				</Text>
-				<Text color="$colorHover">
+				<Text color="color-hover">
 					{view === 'dashboard'
 						? t('adminDashboard.dashboardDescription')
 						: t('adminDashboard.sessionDescription')}
 				</Text>
 				{profileError ? (
-					<Text color="$error">{profileError}</Text>
+					<Text color="danger">{profileError}</Text>
 				) : null}
 			</YStack>
-			<XStack gap="$4" flexWrap="wrap">
-				<Card
-					title={t('common.labels.workspace')}
-					description={t('adminDashboard.workspaceDescription')}
-				/>
-				<Card
-					title={t('common.actions.profile')}
-					description={t('adminDashboard.profileDescription')}
-				/>
+			<XStack gap="4" flexWrap="wrap">
+				<Card>
+					<Card.Header>
+						<Paragraph fontWeight="700" fontSize="6">
+							{t('common.labels.workspace')}
+						</Paragraph>
+						<Paragraph color="colorMuted">
+							{t('adminDashboard.workspaceDescription')}
+						</Paragraph>
+					</Card.Header>
+				</Card>
+				<Card>
+					<Card.Header>
+						<Paragraph fontWeight="700" fontSize="6">
+							{t('common.actions.profile')}
+						</Paragraph>
+						<Paragraph color="colorMuted">
+							{t('adminDashboard.profileDescription')}
+						</Paragraph>
+					</Card.Header>
+				</Card>
 			</XStack>
 		</YStack>
 	);

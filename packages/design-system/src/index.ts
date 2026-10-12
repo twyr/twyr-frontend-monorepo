@@ -5,6 +5,7 @@ export { motion } from './motion';
 export { radius } from './radius';
 export { shadows, surfaceElevations } from './shadows';
 export type { SurfaceElevation } from './shadows';
+export { sizing } from './sizing';
 export { spacing } from './spacing';
 export { tokens } from './tokens';
 export { themes } from './themes';
