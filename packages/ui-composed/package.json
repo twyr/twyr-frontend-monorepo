@@ -60,18 +60,18 @@
 	"main": "src/index.ts",
 	"types": "src/index.ts",
 	"dependencies": {
-		"@hookform/resolvers": "5.2.2",
-		"@shopify/flash-list": "2.3.1",
-		"@tanstack/react-table": "8.21.3",
+		"@hookform/resolvers": "5.9.1",
+		"@shopify/flash-list": "2.3.3",
+		"@tanstack/react-table": "9.2.8",
 		"@twyr/i18n": "0.1.0",
 		"@twyr/ui-kit": "0.1.0",
 		"cmdk": "1.1.1",
-		"lexical": "0.43.0",
-		"react": "19.2.5",
-		"react-hook-form": "7.72.1",
-		"react-native": "0.85.1",
+		"lexical": "0.52.0",
+		"react": "19.3.0",
+		"react-hook-form": "7.90.0",
+		"react-native": "0.87.1",
 		"react-native-calendars": "1.1314.0",
-		"tamagui": "1.144.4",
-		"zod": "4.3.6"
+		"tamagui": "3.0.3",
+		"zod": "4.6.6"
 	}
 }

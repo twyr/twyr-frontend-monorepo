@@ -63,6 +63,6 @@
 	"dependencies": {
 		"@twyr/core": "0.1.0",
 		"@twyr/system-administrators-profile-shared": "0.1.0",
-		"zod": "4.3.6"
+		"zod": "4.6.6"
 	}
 }
