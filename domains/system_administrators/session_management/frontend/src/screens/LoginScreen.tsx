@@ -9,7 +9,7 @@ import {
 import { useLocalizedPageRequests } from '@twyr/app-providers/src/page-requests';
 import { useTwyrTranslation } from '@twyr/i18n';
 import { Button, Card, Input, Select } from '@twyr/ui-kit';
-import { Text, YStack } from 'tamagui';
+import { Text, YStack, useMedia } from 'tamagui';
 
 type LanguageOption = {
 	code: string;
@@ -38,6 +38,7 @@ export function LoginScreen({
 	onLoginSuccess
 }: Props) {
 	const { t } = useTwyrTranslation();
+	const media = useMedia();
 	const { runRequest, unregisterRequest } =
 		useLocalizedPageRequests(selectedLanguage);
 	const [loginPhoneNumber, setLoginPhoneNumber] = useState('');
@@ -97,9 +98,15 @@ export function LoginScreen({
 	}, [countryOptionsEndpoint, runRequest, unregisterRequest]);
 
 	return (
-		<YStack flexGrow={0} flexShrink={0} justifyContent="center" padding="5">
+		<YStack
+			flexGrow={0}
+			flexShrink={0}
+			justifyContent="center"
+			paddingVertical="8"
+			paddingHorizontal={media.xs ? '6' : '8'}
+		>
 			<YStack maxWidth={760} width="100%" alignSelf="center" gap="5">
-				<Card>
+				<Card padding={media.xs ? '5' : '6'}>
 					<YStack gap="3">
 						<YStack gap="4">
 							<Select

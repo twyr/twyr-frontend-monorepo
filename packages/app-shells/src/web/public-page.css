@@ -1,0 +1,26 @@
+.twyr-public-page {
+	box-sizing: border-box;
+	display: flex;
+	min-height: 100dvh;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background-image:
+		linear-gradient(rgba(2, 6, 23, 0.4), rgba(2, 6, 23, 0.4)),
+		url('/auth/public-page-background.png');
+	background-position: center;
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+
+.twyr-public-page__panel {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 512px;
+	min-width: 0;
+	overflow: hidden;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	border-radius: 28px;
+	background-color: rgba(255, 255, 255, 0.16);
+	box-shadow: 0 16px 24px rgba(15, 23, 42, 0.28);
+}

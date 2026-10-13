@@ -391,14 +391,14 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		flexGrow: 1,
 		justifyContent: 'center',
-		padding: 16
+		padding: 24
 	},
 	publicPagePanel: {
 		backgroundColor: 'rgba(255, 255, 255, 0.16)',
 		borderColor: 'rgba(255, 255, 255, 0.22)',
 		borderRadius: 28,
 		borderWidth: 1,
-		maxWidth: 480,
+		maxWidth: 512,
 		overflow: 'hidden',
 		shadowColor: '#0f172a',
 		shadowOffset: { width: 0, height: 16 },

@@ -154,8 +154,8 @@ export function UsersPortal({ view, serverAuthenticated }: Props) {
 
 	if (!serverAuthenticated && !state.authenticated) {
 		return (
-			<div className="users-public-page">
-				<div className="users-public-page__panel">
+			<div className="twyr-public-page">
+				<div className="twyr-public-page__panel">
 					{hasHydrated ? (
 						<LoginScreen
 							selectedLanguage={state.language}
@@ -187,16 +187,6 @@ export function UsersPortal({ view, serverAuthenticated }: Props) {
 							}}
 							register={(draft) =>
 								api.register(draft, state.language)
-							}
-							headerLogo={
-								<img
-									alt={t('common.appName')}
-									src="/auth/public-page-logo.png"
-									style={{
-										height: 36,
-										objectFit: 'contain'
-									}}
-								/>
 							}
 							onLanguageChange={setLanguage}
 							onLoginSuccess={() => {

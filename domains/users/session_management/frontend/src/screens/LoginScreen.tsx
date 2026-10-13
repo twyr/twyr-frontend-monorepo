@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
 	fetchCountryCodeOptions,
 	fetchGenderOptions,
@@ -13,7 +13,7 @@ import { useLocalizedPageRequests } from '@twyr/app-providers/src/page-requests'
 import { useTwyrTranslation } from '@twyr/i18n';
 import { DatePicker } from '@twyr/ui-composed';
 import { Button, Card, Input, Select, Tabs } from '@twyr/ui-kit';
-import { Text, XStack, YStack, Paragraph } from 'tamagui';
+import { Text, XStack, YStack, Paragraph, useMedia } from 'tamagui';
 
 type LanguageOption = {
 	code: string;
@@ -31,7 +31,6 @@ type Props = {
 	register: (draft: PortalRegistrationDraft) => Promise<void>;
 	onLanguageChange: (language: AppLanguageCode) => void;
 	onLoginSuccess?: () => void;
-	headerLogo?: ReactNode;
 };
 
 type MessageTone = 'error' | 'success';
@@ -48,10 +47,10 @@ export function LoginScreen({
 	login,
 	register,
 	onLanguageChange,
-	onLoginSuccess,
-	headerLogo
+	onLoginSuccess
 }: Props) {
 	const { t } = useTwyrTranslation();
+	const media = useMedia();
 	const { runRequest, unregisterRequest } =
 		useLocalizedPageRequests(selectedLanguage);
 	const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -163,9 +162,15 @@ export function LoginScreen({
 	}, [gendersEndpoint, runRequest, unregisterRequest]);
 
 	return (
-		<YStack flexGrow={0} flexShrink={0} justifyContent="center" padding="5">
+		<YStack
+			flexGrow={0}
+			flexShrink={0}
+			justifyContent="center"
+			paddingVertical="8"
+			paddingHorizontal={media.xs ? '6' : '8'}
+		>
 			<YStack maxWidth={760} width="100%" alignSelf="center" gap="5">
-				<Card paddingTop={0}>
+				<Card padding={media.xs ? '5' : '6'}>
 					<Tabs
 						gap="3"
 						value={activeTab}
@@ -176,53 +181,47 @@ export function LoginScreen({
 							}
 						}}
 					>
-						<XStack
-							alignItems="center"
-							borderBottomColor="border-color"
+						<Tabs.List
+							width="100%"
+							borderRadius={0}
 							borderBottomWidth={1}
-							flexWrap="wrap"
-							gap="3"
-							justifyContent="space-between"
+							borderBottomColor="border-color"
 						>
-							{headerLogo ?? null}
-							<Tabs.List borderRadius={0}>
-								{(['login', 'register'] as const).map(
-									(value) => (
-										<Tabs.Tab
-											key={value}
-											value={value}
-											alignItems="center"
-											backgroundColor="transparent hover:background-hover press:background-press"
-											borderRadius={0}
-											borderBottomWidth={2}
-											borderBottomColor={
-												activeTab === value
-													? 'primary'
-													: 'transparent'
-											}
-											paddingHorizontal="4"
-											paddingTop={0}
-											paddingBottom="3"
-										>
-											<Text
-												color={
-													activeTab === value
-														? 'primary'
-														: 'colorMuted'
-												}
-												fontWeight="600"
-											>
-												{t(
-													value === 'login'
-														? 'common.actions.login'
-														: 'userLogin.register'
-												)}
-											</Text>
-										</Tabs.Tab>
-									)
-								)}
-							</Tabs.List>
-						</XStack>
+							{(['login', 'register'] as const).map((value) => (
+								<Tabs.Tab
+									key={value}
+									value={value}
+									flex={1}
+									alignItems="center"
+									backgroundColor="transparent hover:background-hover press:background-press"
+									borderRadius={0}
+									borderBottomWidth={2}
+									borderBottomColor={
+										activeTab === value
+											? 'primary'
+											: 'transparent'
+									}
+									paddingHorizontal="4"
+									paddingTop="2"
+									paddingBottom="3"
+								>
+									<Text
+										color={
+											activeTab === value
+												? 'primary'
+												: 'colorMuted'
+										}
+										fontWeight="600"
+									>
+										{t(
+											value === 'login'
+												? 'common.actions.login'
+												: 'userLogin.register'
+										)}
+									</Text>
+								</Tabs.Tab>
+							))}
+						</Tabs.List>
 
 						{activeTab === 'login' ? (
 							<Tabs.Content value="login" gap="4">

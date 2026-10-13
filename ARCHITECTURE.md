@@ -112,6 +112,20 @@ Responsibilities:
 
 Shells must not contain bounded-context business flows.
 
+The user and system-administrator web shells compose the same
+`packages/app-shells/src/web/PortalWebShell.tsx` layout with actor-specific
+providers. Its full-width topbar stays above a 64px collapsed / 240px expanded
+sidebar and independently scrolling page content. Sidebar controls and tooltip
+layout are shared within the web shell package; domain screens remain separate.
+Both web portals import `public-page.css` separately from generated Tamagui CSS
+to match the mobile login background image, overlay, and translucent panel.
+
+Both mobile portals use `PortalMobileShell` with a safe-area-aware topbar and a
+persistent 64px icon rail. The expanded sidebar is 240px wide; on phones it
+overlays the page below the topbar, with outside-tap and hardware-back dismissal.
+Page content and navigation scroll independently. Mobile tooltip leaves use
+hover/focus hints on web and long-press popovers on native platforms.
+
 ### 2. Bounded Contexts
 
 Each bounded context has three parts.

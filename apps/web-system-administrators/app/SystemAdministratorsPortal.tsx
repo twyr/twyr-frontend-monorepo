@@ -157,8 +157,8 @@ export function SystemAdministratorsPortal({
 
 	if (!serverAuthenticated && !state.authenticated) {
 		return (
-			<div className="system-admin-public-page">
-				<div className="system-admin-public-page__panel">
+			<div className="twyr-public-page">
+				<div className="twyr-public-page__panel">
 					{hasHydrated ? (
 						<LoginScreen
 							selectedLanguage={state.language}
