@@ -63,8 +63,8 @@
 		"@twyr/ui-composed": "0.1.0",
 		"@twyr/ui-kit": "0.1.0",
 		"@twyr/users-profile-shared": "0.1.0",
-		"react": "19.3.0",
-		"react-native": "0.87.1",
-		"tamagui": "3.0.3"
+		"react": "19.3.1",
+		"react-native": "0.88.1",
+		"tamagui": "3.2.0"
 	}
 }
