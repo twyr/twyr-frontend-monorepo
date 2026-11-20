@@ -60,10 +60,10 @@
 	"main": "src/index.ts",
 	"types": "src/index.ts",
 	"dependencies": {
-		"@tamagui/animations-css": "3.2.0",
-		"@tamagui/animations-react-native": "3.2.0",
-		"@tamagui/config": "3.2.0",
-		"@tamagui/core": "3.2.0",
-		"tamagui": "3.2.0"
+		"@tamagui/animations-css": "3.3.3",
+		"@tamagui/animations-react-native": "3.3.3",
+		"@tamagui/config": "3.3.3",
+		"@tamagui/core": "3.3.3",
+		"tamagui": "3.3.3"
 	}
 }

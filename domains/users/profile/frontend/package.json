@@ -65,6 +65,6 @@
 		"@twyr/users-profile-shared": "0.1.0",
 		"react": "19.3.1",
 		"react-native": "0.88.1",
-		"tamagui": "3.2.0"
+		"tamagui": "3.3.3"
 	}
 }
